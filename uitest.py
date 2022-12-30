@@ -1,11 +1,9 @@
-import sys
 from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import time
-import dbconfig as dbcfg
+from config import dbconfig as dbcfg
 from app import App
-
+import logging
+logger = logging.getLogger()
 
 class UI(QWidget):
 
@@ -32,33 +30,36 @@ class UI(QWidget):
         self.height = 270
         self.statusquery = None
         self.searchstring = ''
-        self.sqlpass()
+        self.app = App()
+        self.app.populate()
+        self.initUI()
 
-    def sqlpass(self):
-        self.homebtn = QPushButton("Return Home", self)
-        self.homebtn.move(250, 200)
-        self.setWindowTitle("Enter your mysql password")
-        self.setGeometry(self.left, self.top, self.width, self.height)
-        w = QWidget(self)
-        self.statusquery = QLabel(w)
-        # self.label = QLabel("My text")
-        # self.layout.addWidget(self.label)
-        self.statusquery.setText("Please enter your mysql server password")
-        self.statusquery.move(50, 25)
-        self.statusquery.show()
-        self.textbox1 = QLineEdit(self)
-        self.gobutton = QPushButton('Go', self)
-        self.gobutton.move(200, 100)
-        self.textbox1.move(100, 100)
-        self.text = self.textbox1.text()
-        self.gobutton.clicked.connect(self.on_click_enter)
-        self.textbox1.textChanged.connect(self.textchanged)
-        self.homebtn.clicked.connect(self.on_click_return)
-        self.show()
+    # def sqlpass(self):
+    #     self.homebtn = QPushButton("Return Home", self)
+    #     self.homebtn.move(250, 200)
+    #     self.setWindowTitle("Enter your mysql password")
+    #     self.setGeometry(self.left, self.top, self.width, self.height)
+    #     w = QWidget(self)
+    #     self.statusquery = QLabel(w)
+    #     # self.label = QLabel("My text")
+    #     # self.layout.addWidget(self.label)
+    #     self.statusquery.setText("Please enter your mysql server password")
+    #     self.statusquery.move(50, 25)
+    #     self.statusquery.show()
+    #     self.textbox1 = QLineEdit(self)
+    #     self.gobutton = QPushButton('Go', self)
+    #     self.gobutton.move(200, 100)
+    #     self.textbox1.move(100, 100)
+    #     self.text = self.textbox1.text()
+    #     self.gobutton.clicked.connect(self.on_click_enter)
+    #     self.textbox1.textChanged.connect(self.textchanged)
+    #     self.homebtn.clicked.connect(self.on_click_return)
+    #     self.show()
 
 
     def initUI(self):
-
+        self.homebtn = QPushButton("Return Home", self)
+        self.homebtn.move(250, 200)
         self.setWindowTitle("Are you a librarian or a member?")
         self.setGeometry(self.left, self.top, self.width, self.height)
         w = QWidget(self)
@@ -230,10 +231,13 @@ class UI(QWidget):
 
     def displaydetails(self, data):
         # # TODO: to create a visual output for the book data
-        # have a borrow button and onclick - onclick_borrow
+        logger.info(str(data))
+        displaydata = data[2::]
+        cols = self.app.fetchColumns(self.type)[2::]
+        pass
 
-
-
+        # create QTableWidget and use that to present rows and cols from sql
+        # so we would need a function that does that for us from the backend App
     @pyqtSlot()
     def on_click_go(self):
         if self.text.isnumeric():
@@ -254,6 +258,7 @@ class UI(QWidget):
         self.status = "Member"
         self.lib_btn.hide()
         self.mem_btn.hide()
+
 
 
     def on_click_mem(self):
@@ -279,13 +284,13 @@ class UI(QWidget):
     def on_click_return(self):
         self.close()
         self.statusquery.setText('')
-        self.sqlpass()
+        self.initUI()
 
     def on_click_enter(self):
 
         try:
             self.app = App()
-            self.app.populate(self.text)
+            self.app.populate()
             self.close()
             self.statusquery.setText('')
             self.gobutton.hide()

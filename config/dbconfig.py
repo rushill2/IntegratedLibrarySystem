@@ -1,7 +1,7 @@
 password = None
 
 createtable = {
-    "Mem": "CREATE TABLE IF NOT EXISTS Member (Member_Id int, PRIMARY KEY(Member_Id), first_name VARCHAR(255), last_name VARCHAR(255), date_of_birth DATE, Books_Borrowed VARCHAR(255), No_of_Borrows int,  Phone int)",
+    "Mem": "CREATE TABLE IF NOT EXISTS Member (Member_Id int, PRIMARY KEY(Member_Id), first_name VARCHAR(255), last_name VARCHAR(255), date_of_birth DATE, Books_Borrowed VARCHAR(255), No_of_Borrows int,  Phone VARCHAR(255))",
     "Issue": "CREATE TABLE IF NOT EXISTS Issues (Issue_Id int,  PRIMARY KEY(Issue_Id), Item_Id int, Title VARCHAR(255), Date_Issued DATE, Date_Due DATE)",
     "Docs": "CREATE TABLE IF NOT EXISTS Documents(Doc_Id int, PRIMARY KEY(Doc_Id), Copies int, Issue_Id int, FOREIGN KEY(Issue_Id) references Issues(Issue_Id))",
     "Book": "CREATE TABLE IF NOT EXISTS Books(Book_Id int, PRIMARY KEY(Book_Id), Book_Title VARCHAR(255), Edition VARCHAR(255), Keywords VARCHAR(255), Genre VARCHAR(255), Topic VARCHAR(255), Authors VARCHAR(255), Publication_Date DATE)",
@@ -21,12 +21,14 @@ tables = {
 
 
 sql = {
-    'searchDocs': "SELECT * FROM librarian.{_tbl} WHERE ",
-    'borrowDoc': 'INSERT INTO librarian.Issues(Issue_Id, Item_Id, Title, Date_Issued, Date_Due) VALUES({_tbl}, {_tbl},{_tbl},{_tbl},{_tbl} )',
-    'returnDoc': 'DELETE FROM librarian.Issues() WHERE Issue_Id = {_id}',
-    'updateMemberIssues': "UPDATE librarian.Member SET No_of_Borrows = {_borrows}, Books_Borrowed = {_books}",
-    'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM librarian.Member WHERE ",
-    'memberlogin': 'SELECT * FROM librarian.Member WHERE Member_Id = {_id}'
+    'searchDocs': "SELECT * FROM Librarian.{_tbl} WHERE ",
+    'borrowDoc': 'INSERT INTO Librarian.Issues(Issue_Id, Item_Id, Title, Date_Issued, Date_Due) VALUES({_id}, {_item},{_ttl},{_date},{_due} )',
+    'returnDoc': 'DELETE FROM Librarian.Issues WHERE Issue_Id = {_id}',
+    'updateMemberIssues': "UPDATE Librarian.Member SET No_of_Borrows = {_borrows}, Books_Borrowed = {_books}",
+    'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM Librarian.Member WHERE ",
+    'memberlogin': 'SELECT * FROM Librarian.Member WHERE Member_Id = {_id}',
+    'getDocDetails': '"SELECT * from Librarian.{_tbl};"',
+    'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N"{_table}";'
 }
 
 template = {
@@ -61,3 +63,5 @@ template = {
         7: "Publication_Date"
     }
 }
+
+password = "Thehighground@773"

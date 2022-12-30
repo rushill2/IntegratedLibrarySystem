@@ -1,13 +1,12 @@
 import datetime
+import traceback
 
 import mysql.connector
-import dbconfig as dbcfg
+
+from config import dbconfig, dbconfig as dbcfg
 import sys
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-
+import logging
+logger = logging.getLogger()
 
 class App:
 
@@ -15,23 +14,36 @@ class App:
     def __init__(self):
         self.mydb = None
         self.mycursor = None
-        self.password = None
+        self.password = dbconfig.password
 
-    def populate(self, passkey):
+    def populate(self):
+        try:
         # create librarian db if it doesn't exist
-        self.mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password=passkey,
-        )
-        self.mycursor = self.mydb.cursor(buffered=True)
-        self.mycursor.execute("SHOW DATABASES")
-        create = any(db for db in self.mycursor if db == ('librarian',))
+            mydb = mysql.connector.connect(
+                host="103.90.163.100",
+                user="root",
+                password=self.password,
+            )
+            self.mydb = mydb
+            mycursor = mydb.cursor(buffered=True)
+            self.mycursor=mycursor
 
-        if not create:
-            self.mycursor.execute("CREATE DATABASE Librarian")
+            try:
+                self.mycursor.execute("SHOW DATABASES")
+                dblist = []
+                for db in self.mycursor:
+                    dblist.append(db)
+                logger.info("Currently we have databases: " + str(dblist))
+                if not ('Librarian',) in dblist:
+                    self.mycursor.execute("CREATE DATABASE Librarian")
+                self.createTables()
+            except Exception as e:
+                logger.error("Error in creating cursor: " + str(e) + traceback.format_exc())
+                sys.exit(-1)
+        except Exception as e:
+            logger.error("Error in populate: " + str(e) + traceback.format_exc())
+            sys.exit(-1)
 
-        self.createTables()
 
 
     def createTables(self):
@@ -40,9 +52,10 @@ class App:
         tables = dbcfg.tables
         for k,v in creates.items():
             try:
-                self.mycursor.execute("USE librarian")
+                self.mycursor.execute("USE Librarian")
                 self.mycursor.execute(v)
             except Exception as e:
+                logger.error("Error in createTables: "+ str(e) +traceback.format_exc())
                 sys.exit(-2)
 
     def validateLogin(self, id):
@@ -50,15 +63,17 @@ class App:
         try:
             self.mycursor.execute(sql)
             self.mycursor.fetchall()
-            print(sql)
-            if self.mycursor.rowcount == 0:
-                print("0 count")
-                return False
-            else:
-                print("Found rows")
-                return True
+            logger.info("Validation SQL: " + sql)
+            logger.info("Found " +str(self.mycursor.rowcount) + " rows")
+            return True
         except Exception as e:
-            print("Validate Error", e)
+            logger.error("Validate Error" + str(e), + traceback.format_exc())
+            return False
+
+    def fetchColumns(self, table):
+        sql= dbcfg.sql['getColumns'].replace('{_table}', table)
+        self.mycursor.execute(sql)
+        self.mycursor.fetchall()
 
 
     # class Librarian:
@@ -111,42 +126,54 @@ class App:
                 i -= 1
 
             try:
-                print(sql)
-                nosql = "SELECT * FROM librarian.Books WHERE Book_Title = 'name1';"
+                logger.info("searchDocument SQL: " + sql)
                 self.cursor.execute(sql)
                 self.cursor.fetchall()
                 if self.cursor.rowcount==0:
                     return ""
                 names = ""
                 for r in self.cursor._rows:
-                    names += r[1] +','
+                    names += r[2] +','
                 return names[:-1]
 
             except Exception as e:
-                print("SEARCH ERROR", e)
+                logger.error("searchDocument Error: " + str(e) + traceback.format_exc())
+                sys.exit(-1)
 
         def getRecords(self, name, type):
             name = '"' + name + '"'
             if type == "Books":
-                sql = "SELECT * FROM librarian.{_tbl} where Book_Title = {_title}".replace("{_tbl}", type).replace("{_title}", name)
+                sql = "SELECT * FROM Librarian.{_tbl} where Book_Title = {_title}".replace("{_tbl}", type).replace("{_title}", name)
 
             elif type == "Magazines":
-                sql = "SELECT * FROM librarian.{_tbl} where Title = {_title}".replace("{_tbl}", type).replace("{_title}", name)
+                sql = "SELECT * FROM Librarian.{_tbl} where Title = {_title}".replace("{_tbl}", type).replace("{_title}", name)
 
             else:
-                sql = "SELECT * FROM librarian.{_tbl} where Book_Title = {_title}".replace("{_tbl}", type).replace("{_title}", name)
+                sql = "SELECT * FROM Librarian.{_tbl} where Book_Title = {_title}".replace("{_tbl}", type).replace("{_title}", name)
 
-            print(sql)
+            logger.info("getRecords SQL: " + sql)
             self.cursor.execute(sql)
             self.cursor.fetchall()
             data = self.cursor._rows[0]
-            print(data)
+            logger.info("getRecords Data: " + str(data))
             return data
         def borrowDocument(self, doctype, id):
 
             # if copies > 0 documents + decrement copies
+            sql = dbcfg.sql.getDocDetails.replace('{_tbl}', doctype)
+            try:
+                self.mycursor.execute(sql)
+
+            except Exception as e:
+                logger.error("Error in getting document details: " + str(e) + traceback.format_exc())
+                sys.exit(-1)
+
+
+
             # Issues table insert new field
             # Increment Members # of issues SELECT Member number of issues, +1 and then update
+
+
             pass
 
         def returnDocument(self, doctype, id):
