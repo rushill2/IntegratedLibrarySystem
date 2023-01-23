@@ -22,3 +22,8 @@ sql = {
     'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";'
 }
 
+columns = {
+    "Books": ("Title", "Edition", "Keywords", "Genre", "Topic", "Authors", "Publication Date"),
+    "Magazines": (),
+    "Journals" : ()
+}

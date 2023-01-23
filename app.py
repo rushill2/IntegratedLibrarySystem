@@ -102,9 +102,14 @@ class App:
             global mycursor
             self.cursor = mycursor
 
-        def searchDocument(self, params):
-            type = "Books"
-            sql = dbcfg.sql['searchDocs'].replace("{_tbl}", type)
+        def setSearchResults(self, results):
+            self.search_results = results
+
+        def getSearchResults(self):
+            return self.search_results
+
+        def searchDocument(self, params, doctype):
+            sql = dbcfg.sql['searchDocs'].replace("{_tbl}", doctype)
 
             for i, (k, v) in enumerate(params.items()):
                 if len(v) == 0:
@@ -131,10 +136,16 @@ class App:
                 self.cursor.fetchall()
                 if self.cursor.rowcount == 0:
                     return ""
-                names = ""
+                names = []
+                i = 0
                 for r in self.cursor._rows:
-                    names += r[2] + ','
-                return names[:-1]
+                    if i == 0:
+                        names.append(dbcfg.columns['Books'])
+                    names.append(r[1::])
+                    i += 1
+
+                self.setSearchResults(names)
+                return names
 
             except Exception as e:
                 logger.error("searchDocument Error: " + str(e) + traceback.format_exc())
