@@ -1,355 +1,215 @@
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from config import dbconfig as dbcfg
-from app import App
 import logging
+import time
+import tkinter as tk
+from tkinter import font as tkfont
+from app import App
+from kinterUtilities import KinterUtilities
+
 logger = logging.getLogger()
+import config.data
+class SampleApp(tk.Tk):
 
-class UI(QWidget):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
 
-    def __init__(self):
-        self.type = None
-        self.gobutton = None
-        self.button1 = None
-        self.textbox1 = None
-        self.button2 = None
-        self.set_btn = None
-        self.status = None
-        self.text = None
-        self.searchdict = {}
-        self.app = None
-        self.lib_btn = None
-        self.mem_btn = None
-        super().__init__()
-        self.title = 'PyQt5 button - pythonspot.com'
-        self.left = 760
-        self.top = 270
-        self.id = None
-        self.width = 400
-        self.homebtn = None
-        self.height = 270
-        self.statusquery = None
-        self.searchstring = ''
+        self.title_font = tkfont.Font(family='Calibri', size=12)
+
+        # the container is where we'll stack a bunch of frames
+        # on top of each other, then the one we want visible
+        # will be raised above the others
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        self.frames = {}
+        for F in (StartPage, LibrarianHome, MemberVerification, SearchHome,SearchBooks,SearchResults):
+            page_name = F.__name__
+            frame = F(parent=container, controller=self)
+            self.frames[page_name] = frame
+
+            # put all of the pages in the same location;
+            # the one on the top of the stacking order
+            # will be the one that is visible.
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame("StartPage")
+
+    def show_frame(self, page_name):
+        '''Show a frame for the given page name'''
+        frame = self.frames[page_name]
+        frame.tkraise()
+
+
+class StartPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        app = App()
+        app.populate()
+        logger.info("DB connection successful!")
+        t = time.time()
+        logger.info("Opening StartPage...")
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Are you a member or librarian?", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=20, padx=20)
+
+        button1 = tk.Button(self, text="Member",
+                            command=lambda: controller.show_frame("MemberVerification"))
+        button2 = tk.Button(self, text="Librarian",
+                            command=lambda: controller.show_frame("LibrarianHome"))
+        button1.pack(pady=0, padx=10)
+        button2.pack(pady=10, padx=10)
+        logger.info("StartPage ready. Took " + str(time.time()-t) + " seconds")
+
+
+class LibrarianHome(tk.Frame):
+
+    def __init__(self, parent, controller):
+        t = time.time()
+        self.app = App()
+        logger.info("Opening LibrarianHome...")
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="View Members or Look for Document", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=20, padx=20)
+        button = tk.Button(self, text="Home",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack(pady=20, padx=10)
+        logger.info("LibrarianHome ready. Took " + str(time.time() - t) + " seconds")
+
+
+class MemberVerification(tk.Frame):
+    def __init__(self, parent, controller):
+        t = time.time()
+        logger.info("Opening LibrarianHome...")
+        tk.Frame.__init__(self, parent)
         self.app = App()
         self.app.populate()
-        self.initUI()
+        self.controller = controller
 
-    # def sqlpass(self):
-    #     self.homebtn = QPushButton("Return Home", self)
-    #     self.homebtn.move(250, 200)
-    #     self.setWindowTitle("Enter your mysql password")
-    #     self.setGeometry(self.left, self.top, self.width, self.height)
-    #     w = QWidget(self)
-    #     self.statusquery = QLabel(w)
-    #     # self.label = QLabel("My text")
-    #     # self.layout.addWidget(self.label)
-    #     self.statusquery.setText("Please enter your mysql server password")
-    #     self.statusquery.move(50, 25)
-    #     self.statusquery.show()
-    #     self.textbox1 = QLineEdit(self)
-    #     self.gobutton = QPushButton('Go', self)
-    #     self.gobutton.move(200, 100)
-    #     self.textbox1.move(100, 100)
-    #     self.text = self.textbox1.text()
-    #     self.gobutton.clicked.connect(self.on_click_enter)
-    #     self.textbox1.textChanged.connect(self.textchanged)
-    #     self.homebtn.clicked.connect(self.on_click_return)
-    #     self.show()
+        # description text
+        self.label = tk.Label(self, text="Enter your Member ID", font=controller.title_font)
+        self.label.pack(side="top", fill="x", pady=20, padx=20)
+
+        # buttons
+        home = tk.Button(self, text="Home",
+                           command=lambda: controller.show_frame("StartPage"))
+        # get value from entry when pressed
+        submit = tk.Button(self, text="Submit",
+                         command=lambda: self.get_member_id(controller))
+        member_id = tk.StringVar()
+
+        # textbox
+        self.id_entry = tk.Entry(self, textvariable=member_id, font=('calibre', 10, 'normal'))
+
+        # displaying everything
+        self.id_entry.pack()
+        submit.pack(pady=5, padx=10)
+        home.pack(pady=5, padx=10)
+        logger.info("MemberVerification ready. Took " + str(time.time() - t) + " seconds")
+
+        #  value getter for member id that validates with db
+    def get_member_id(self, controller):
+        entry = self.id_entry.get()
+        logger.info("Validating Member ID: " + entry + '...')
+        if self.app.validateLogin(entry):
+            logger.info("Validation Successful! Welcome member " + entry)
+            config.data.memberid = entry
+            controller.show_frame('SearchHome')
+        else:
+            logger.error("Validation Failed. Try again.")
+            self.label['text'] = "Validation Failed.Try again."
+
+class SearchHome(tk.Frame):
+    def __init__(self, parent, controller):
+        t = time.time()
+        self.app = App()
+        logger.info("Opening SearchHome...")
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Welcome! \n Pick the type of document", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10, padx=10)
+        books = tk.Button(self, text="Books",command=lambda: controller.show_frame("SearchBooks"))
+        books.pack(pady=1, padx=10)
+        journals = tk.Button(self, text="Journals",command=lambda: controller.show_frame("StartPage"))
+        journals.pack(pady=1, padx=10)
+        mags = tk.Button(self, text="Magazines", command=lambda: controller.show_frame("StartPage"))
+        mags.pack(pady=1, padx=10)
+        button = tk.Button(self, text="Home",command=lambda: controller.show_frame("StartPage"))
+        button.pack(pady=10, padx=10)
+        logger.info("SearchHome ready. Took " + str(time.time() - t) + " seconds")
 
 
-    def initUI(self):
-        self.homebtn = QPushButton("Return Home", self)
-        self.homebtn.move(250, 200)
-        self.setWindowTitle("Are you a librarian or a member?")
-        self.setGeometry(self.left, self.top, self.width, self.height)
-        w = QWidget(self)
-        self.statusquery = QLabel(w)
-        # self.label = QLabel("My text")
-        # self.layout.addWidget(self.label)
-        self.statusquery.setText("Are you a librarian or a member?")
-        self.statusquery.move(95, 25)
-        self.statusquery.show()
-        self.lib_btn = QPushButton('Librarian', self)
-        self.mem_btn = QPushButton('Member', self)
+class SearchBooks(tk.Frame):
+    def __init__(self, parent, controller):
+        self.tkutil = KinterUtilities(parent)
+        self.controller = controller
+        t = time.time()
+        self.app = App()
+        logger.info("Opening SearchBooks...")
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.label = tk.Label(self, text="Set filters and search:", font=controller.title_font)
+        self.label.pack(side="top", fill="x", pady=10, padx=10)
 
-        self.lib_btn.move(100, 100)
-        self.mem_btn.move(200, 100)
+        member_id = tk.StringVar()
+        # textbox
+        self.filter_entry = tk.Entry(self, textvariable=member_id, font=('calibre', 10, 'normal'))
+        self.filter_entry.pack(side=tk.LEFT, padx = 10)
+        # options menu
+        self.opts = tk.StringVar(self)
+        self.opts.set(config.data.filters[0])
+        options = tk.OptionMenu(self, self.opts, *config.data.filters)
+        options.pack(side=tk.LEFT, padx = 10)
+        logger.info("SearchBooks ready. Took " + str(time.time() - t) + " seconds")
 
-        self.lib_btn.clicked.connect(self.on_click_lib)
-        self.mem_btn.clicked.connect(self.on_click_mem)
-        self.homebtn.clicked.connect(self.on_click_return)
-        self.show()
+        # set filters and search buttons
+        self.inputvalues = {}
+        setfilter = tk.Button(self, text="Set Filter", command=lambda: self.addFilters(controller))
+        setfilter.pack(pady=5, padx=10, side=tk.RIGHT)
+        search = tk.Button(self, text="Search", command=lambda: self.searchDoc("Books"))
+        search.pack(pady=5, padx=10, side=tk.RIGHT)
 
+        # clearfilters
+        clear = tk.Button(self, text="Clear Filters", command=lambda: self.clearFilters())
+        clear.pack(pady=5, padx=10, side=tk.BOTTOM)
 
-    def memberidUI(self):
-        self.setWindowTitle("Enter your member ID")
-        self.setGeometry(self.left, self.top, self.width, self.height)
-        w = QWidget(self)
-        self.statusquery = QLabel(w)
-        # self.label = QLabel("My text")
-        # self.layout.addWidget(self.label)
-        self.statusquery.setText("Enter your member ID (only positive integers)")
-        self.statusquery.move(50, 25)
-        self.statusquery.show()
+    def clearFilters(self):
+        self.inputvalues = {}
+        self.label['text'] = "Set filters and search:"
 
-        self.textbox1 = QLineEdit(self)
-        self.gobutton = QPushButton('Go', self)
-        self.gobutton.move(200, 100)
-        self.textbox1.move(100, 100)
-        self.text = self.textbox1.text()
-        self.gobutton.clicked.connect(self.on_click_go)
-        self.textbox1.textChanged.connect(self.textchanged)
-        self.homebtn.clicked.connect(self.on_click_return)
-        self.show()
+    def addFilters(self, controller):
+        self.inputvalues[self.opts.get()]=self.filter_entry.get()
+        filters_set = list(self.inputvalues.keys())
+        if len(filters_set)>0:
+            self.label['text'] = "Filters Set: " +str(filters_set)
+        else:
+            self.label['text'] = "Set filters and search:"
 
-    def memactionUI(self):
-        self.setWindowTitle("Search or Return?")
-        self.setGeometry(self.left, self.top, self.width, self.height)
-        w = QWidget(self)
-        self.statusquery = QLabel(w)
-        # self.label = QLabel("My text")
-        # self.layout.addWidget(self.label)
-        self.statusquery.setText("Search or Return?")
-        self.statusquery.move(150, 25)
-        self.statusquery.show()
-        self.button1 = QPushButton('Search', self)
-        self.button2 = QPushButton('Return', self)
+    def searchDoc(self, type):
+        logger.info("member id : " + self.app.getMemberId())
+        member = self.app.Member(self.app.getMemberId(), self.app)
+        document = member.searchDocument(self.inputvalues, type)
 
-        self.button1.move(100, 100)
-        self.button2.move(200, 100)
-        self.homebtn.clicked.connect(self.on_click_return)
-        self.button1.clicked.connect(self.on_click_memsearch)
-        self.button2.clicked.connect(self.on_click_memreturn)
-        self.show()
+        if document == '':
+            self.label['text'] = "No document found"
+            return
+        self.controller.show_frame("SearchResults")
 
-    def memsearchUI(self):
-        self.setWindowTitle("Which Type of Document are you looking for")
-        self.setGeometry(self.left, self.top, self.width, self.height)
-        w = QWidget(self)
-        self.statusquery = QLabel(w)
-        # self.label = QLabel("My text")
-        # self.layout.addWidget(self.label)
-        self.statusquery.setText("Which Type of Document are you looking for?")
-        self.statusquery.move(65, 25)
-        self.statusquery.show()
-        self.button1 = QPushButton('Books', self)
-        self.button2 = QPushButton('Magazines', self)
-        self.button3 = QPushButton('Journals', self)
-
-        self.button1.move(50, 100)
-        self.button2.move(150, 100)
-        self.button3.move(250, 100)
-
-        self.button1.clicked.connect(self.go_to_book)
-        self.button2.clicked.connect(self.go_to_mags)
-        self.button2.clicked.connect(self.go_to_journ)
-        self.show()
-
-    def memsearchbook(self):
-        layout = QHBoxLayout()
-        self.drop = QComboBox()
-        for e in dbcfg.template["Books"].values():
-            self.drop.addItem(e)
-        layout.addWidget(self.drop)
-        self.textbox1 = QLineEdit(self)
-        self.set_btn = QPushButton("Set", self)
-        self.search_btn = QPushButton("Search", self)
-
-        self.textbox1.move(260, 120)
-        self.drop.setFixedSize(110, 20)
-        self.setLayout(layout)
-        self.drop.move(0, 200)
-        self.setWindowTitle("Search Filters")
-        self.set_btn.move(30, 100)
-        self.search_btn.move(30, 140)
-        self.text = ''
-        self.set_btn.clicked.connect(self.on_click_set)
-        self.search_btn.clicked.connect(self.on_click_search)
-        # self.statusquery.setText("Search Filters - Hit set to set filters and Go when done")
-        self.show()
-
-    def memsearchmags(self):
-        layout = QHBoxLayout()
-        self.drop = QComboBox()
-        for e in dbcfg.template["Mags"].values():
-            self.drop.addItem(e)
-        layout.addWidget(self.drop)
-        self.textbox1 = QLineEdit(self)
-        self.set_btn = QPushButton("Set", self)
-        self.search_btn = QPushButton("Search", self)
-
-        self.textbox1.move(260, 120)
-        self.drop.setFixedSize(110, 20)
-        self.setLayout(layout)
-        self.drop.move(0, 200)
-        self.setWindowTitle("Search Filters")
-        self.set_btn.move(30, 100)
-        self.search_btn.move(30, 140)
-        self.text = ''
-        self.set_btn.clicked.connect(self.on_click_set)
-        self.search_btn.clicked.connect(self.on_click_search)
-        # self.statusquery.setText("Search Filters - Hit set to set filters and Go when done")
-        self.show()
-
-    def memsearchjourn(self):
-        layout = QHBoxLayout()
-        self.drop = QComboBox()
-        for e in dbcfg.template["Journs"].values():
-            self.drop.addItem(e)
-        layout.addWidget(self.drop)
-        self.textbox1 = QLineEdit(self)
-        self.set_btn = QPushButton("Set", self)
-        self.search_btn = QPushButton("Search", self)
-
-        self.textbox1.move(260, 120)
-        self.drop.setFixedSize(110, 20)
-        self.setLayout(layout)
-        self.drop.move(0, 200)
-        self.setWindowTitle("Search Filters")
-        self.set_btn.move(30, 100)
-        self.search_btn.move(30, 140)
-        self.text = ''
-        self.set_btn.clicked.connect(self.on_click_set)
-        self.search_btn.clicked.connect(self.on_click_search)
-        # self.statusquery.setText("Search Filters - Hit set to set filters and Go when done")
-        self.show()
-
-    def searchresults(self, result):
-        for e in result:
-            self.drop.addItem(e)
-        self.lookup_btn = QPushButton("Details", self)
-
-        self.drop.setFixedSize(110, 20)
-        self.drop.move(0, 200)
-        self.setWindowTitle("Search Results")
-
-        self.lookup_btn.move(30, 140)
-        self.text = ''
-        self.lookup_btn.clicked.connect(self.on_click_lookup)
-        # self.statusquery.setText("Search Filters - Hit set to set filters and Go when done")
-        self.show()
-
-    def displaydetails(self, data):
-        # # TODO: to create a visual output for the book data
-        logger.info(str(data))
-        displaydata = data[2::]
-        cols = self.app.fetchColumns(self.type)[2::]
-        pass
-
-        # create QTableWidget and use that to present rows and cols from sql
-        # so we would need a function that does that for us from the backend App
-    @pyqtSlot()
-    def on_click_go(self):
-        if self.text.isnumeric():
-            if not self.app.validateLogin(self.text):
-                self.statusquery.setText("Account does not exist. Contact a Librarian")
-            else:
-                self.id = self.text
-                self.gobutton.hide()
-                self.close()
-                self.textbox1.hide()
-                self.statusquery.setText('')
-                self.memactionUI()
-
-    def textchanged(self, text):
-        self.text = text
-
-    def on_click_lib(self):
-        self.status = "Member"
-        self.lib_btn.hide()
-        self.mem_btn.hide()
+class SearchResults(tk.Frame):
+    def __init__(self, parent, controller):
+        t = time.time()
+        self.app = App()
+        logger.info("Opening SearchResults...")
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="View Members or Look for Document", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=20, padx=20)
+        button = tk.Button(self, text="Home",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack(pady=20, padx=10)
+        logger.info("LibrarianHome ready. Took " + str(time.time() - t) + " seconds")
 
 
 
-    def on_click_mem(self):
-        self.status = "Member"
-        self.state = "memberlogin"
-        self.close()
-        self.lib_btn.hide()
-        self.mem_btn.hide()
-        self.statusquery.setText('')
-        self.memberidUI()
-
-    def on_click_memsearch(self):
-        self.close()
-        self.statusquery.setText('')
-        self.button1.hide()
-        self.button2.hide()
-        self.textbox1.hide()
-        self.memsearchUI()
-
-    def on_click_memreturn(self):
-        print("Return")
-
-    def on_click_return(self):
-        self.close()
-        self.statusquery.setText('')
-        self.initUI()
-
-    def on_click_enter(self):
-
-        try:
-            self.app = App()
-            self.app.populate()
-            self.close()
-            self.statusquery.setText('')
-            self.gobutton.hide()
-            self.textbox1.hide()
-            self.initUI()
-        except Exception as e:
-            self.statusquery.setText("Incorrect Password. Please review the text")
-
-    def on_click_go_book(self):
-        print("HIU")
-
-    def go_to_book(self):
-        self.type = self.button1.text()
-        self.button1.hide()
-        self.button2.hide()
-        self.button3.hide()
-        self.statusquery.setText('')
-        self.close()
-        self.memsearchbook()
-
-    def go_to_mags(self):
-        self.type = self.button2.text()
-        self.button1.hide()
-        self.button2.hide()
-        self.button3.hide()
-        self.statusquery.setText('')
-        self.memsearchmags()
-
-    def go_to_journ(self):
-        self.type = self.button3.text()
-        self.button1.hide()
-        self.button2.hide()
-        self.button3.hide()
-        self.statusquery.setText('')
-        self.memsearchjourn()
-
-
-    def on_click_set(self):
-        key = self.drop.currentText()
-        self.searchdict[key] = self.textbox1.text()
-
-    def on_click_search(self):
-        mem = self.app.Member(self.id, self.app)
-        names = mem.searchDocument(self.searchdict, self.type, self.app)
-        namelist = names.split(',')
-        self.close()
-        self.set_btn.hide()
-        self.search_btn.hide()
-        self.textbox1.hide()
-        self.drop.clear()
-        self.searchresults(namelist)
-
-    def on_click_lookup(self):
-        mem = self.app.Member(self.id, self.app)
-        rows = mem.getRecords(self.drop.currentText(), self.type)
-        ## here call ur next function
-        # do the hides/closes for widgets
-        self.displaydetails(rows)
-
-    def onclick_borrow(self):
-        mem = self.app.Member(self.id, self.app)
-        mem.borrowDocument(self.type,self.id)

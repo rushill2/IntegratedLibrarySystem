@@ -1,4 +1,4 @@
-password = None
+from config.data import password
 
 createtable = {
     "Mem": "CREATE TABLE IF NOT EXISTS Member (Member_Id int, PRIMARY KEY(Member_Id), first_name VARCHAR(255), last_name VARCHAR(255), date_of_birth DATE, Books_Borrowed VARCHAR(255), No_of_Borrows int,  Phone VARCHAR(255))",
@@ -10,15 +10,6 @@ createtable = {
     "Loc": "CREATE TABLE IF NOT EXISTS Location(Doc_Id int, FOREIGN KEY(Doc_Id) references Documents(Doc_Id), Room VARCHAR(255), Shelf VARCHAR(255))"
 }
 
-tables = {
-    'Mem': "Member",
-    'Issue': 'Issues',
-    'Book': 'Books',
-    'Mags': 'Magazines',
-    'Journs': 'Journals',
-    'Loc': 'Location'
-}
-
 
 sql = {
     'searchDocs': "SELECT * FROM Librarian.{_tbl} WHERE ",
@@ -28,40 +19,6 @@ sql = {
     'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM Librarian.Member WHERE ",
     'memberlogin': 'SELECT * FROM Librarian.Member WHERE Member_Id = {_id}',
     'getDocDetails': '"SELECT * from Librarian.{_tbl};"',
-    'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N"{_table}";'
+    'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";'
 }
 
-template = {
-    'Books': {
-        0: "Book_Title",
-        1: "Edition",
-        2: "Keywords",
-        3: "Genre",
-        4: "Topic",
-        5: "Authors",
-        6: "Publication_Date"
-    },
-    'Journs': {
-        0: "Title",
-        1: "Journal",
-        2: "Authors",
-        3: "Keywords",
-        4: "Genre",
-        5: "Topic",
-        6: "Publisher",
-        7: "Issue",
-        8: "Publication_Date"
-    },
-    'Mags': {
-        0: "Title",
-        1: "Issue",
-        2: "Editors",
-        3: "Contributors",
-        4: "Keywords",
-        5: "Genre",
-        6: "Topic",
-        7: "Publication_Date"
-    }
-}
-
-password = "Thehighground@773"
