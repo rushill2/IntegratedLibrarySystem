@@ -13,17 +13,17 @@ createtable = {
 
 sql = {
     'searchDocs': "SELECT * FROM Librarian.{_tbl} WHERE ",
-    'borrowDoc': 'INSERT INTO Librarian.Issues(Issue_Id, Item_Id, Title, Date_Issued, Date_Due) VALUES({_id}, {_item},{_ttl},{_date},{_due} )',
+    'insertIssues': 'INSERT INTO Librarian.Issues(Title, Date_Issued, Date_Due, Doc_id) VALUES({_ttl},{_date},{_due}, {_docid})',
     'returnDoc': 'DELETE FROM Librarian.Issues WHERE Issue_Id = {_id}',
     'updateMemberIssues': "UPDATE Librarian.Member SET No_of_Borrows = {_borrows}, Books_Borrowed = {_books}",
     'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM Librarian.Member WHERE ",
     'memberlogin': 'SELECT * FROM Librarian.Member WHERE Member_Id = {_id}',
-    'getDocDetails': '"SELECT * from Librarian.{_tbl};"',
+    'getDocDetails': '"SELECT * from Librarian.Documents WHERE Doc_Id = {_id};"',
     'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";'
 }
 
 columns = {
-    "Books": ("Title", "Edition", "Keywords", "Genre", "Topic", "Authors", "Publication Date"),
+    "Books": ("Number", "Title", "Edition", "Keywords", "Genre", "Topic", "Authors", "Publication Date"),
     "Magazines": (),
     "Journals" : ()
 }

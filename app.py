@@ -141,7 +141,7 @@ class App:
                 for r in self.cursor._rows:
                     if i == 0:
                         names.append(dbcfg.columns['Books'])
-                    names.append(r[1::])
+                    names.append(r)
                     i += 1
 
                 self.setSearchResults(names)
@@ -172,22 +172,30 @@ class App:
             logger.info("getRecords Data: " + str(data))
             return data
 
-        def borrowDocument(self, doctype, id):
+        def borrowDocument(self, doctype, doc_id, book_id, data):
 
             # if copies > 0 documents + decrement copies
-            sql = dbcfg.sql.getDocDetails.replace('{_tbl}', doctype)
-
             try:
-                self.mycursor.execute(sql)
-                rows = self.mycursor.fetchall()
-                for r in rows:
-                    pass
+                sql = dbcfg.sql['getDocDetails'].replace('{_id}', str(doc_id))
+            except Exception as e:
+                logger.error("Error making sql docdetails: " + str(e) + traceback.format_exc())
+                sys.exit(-1)
+
+            logger.info("borrowDocument getDocDetails SQL: " + sql)
+            try:
+                self.cursor.execute(sql)
+                rows = self.cursor.fetchall()
+                if rows[0]['Copies'] == 0:
+                    return 0
 
             except Exception as e:
                 logger.error("Error in getting document details: " + str(e) + traceback.format_exc())
                 sys.exit(-1)
 
             # Issues table insert new field
+            QueryCollection.issues('insert', None, self.cursor, data)
+
+
             # Increment Members # of issues SELECT Member number of issues, +1 and then update
 
             pass
@@ -197,3 +205,29 @@ class App:
             # increment copy count
             # decrement user's no of issues
             pass
+
+
+class QueryCollection:
+
+    def issues(self, operation, parameter,cursor, data):
+        if operation=='select':
+            pass
+
+        elif operation=='update':
+            pass
+
+        elif operation=='insert':
+            sql = dbcfg.sql['insertIssues'].replace('{_ttl}', data['Title']).replace('{_date}', data['Date_Issued']).replace('{_due}',data["Date_Due"]).replace("{_docid}", data['Doc_id'])
+            logger.info("Issues SQL Insert: " + sql)
+            try:
+                cursor.execute(sql)
+                cursor.fetchall()
+                logger.info("Issues - Inserted " + str(cursor.rowcount) + " rows")
+            except Exception as e:
+                logger.error("Error in Issues SQL: " + str(e) + traceback.format_exc())
+                sys.exit(-1)
+
+
+        else:
+            logger.error("No replace or delete methods. Try select or update")
+            sys.exit(-1)
