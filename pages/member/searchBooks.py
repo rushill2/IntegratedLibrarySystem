@@ -1,8 +1,8 @@
 import time
 import tkinter as tk
 
-import config.data
-from kinterUtilities import KinterUtilities
+import data.data
+from util.kinterUtilities import KinterUtilities
 import app
 import logging
 
@@ -29,8 +29,8 @@ class SearchBooks(tk.Frame):
         self.filter_entry.pack(side=tk.LEFT, padx=10)
         # options menu
         self.opts = tk.StringVar(self)
-        self.opts.set(config.data.filters[0])
-        options = tk.OptionMenu(self, self.opts, *config.data.filters)
+        self.opts.set(data.data.filters[0])
+        options = tk.OptionMenu(self, self.opts, *data.data.filters)
         options.pack(side=tk.LEFT, padx=10)
         logger.info("SearchBooks ready. Took " + str(time.time() - t) + " seconds")
 

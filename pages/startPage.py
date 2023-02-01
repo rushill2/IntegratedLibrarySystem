@@ -26,3 +26,5 @@ class StartPage(tk.Frame):
         button1.pack(pady=0, padx=10)
         button2.pack(pady=10, padx=10)
         logger.info("StartPage ready. Took " + str(time.time() - t) + " seconds")
+
+

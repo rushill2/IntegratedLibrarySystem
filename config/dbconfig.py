@@ -1,8 +1,6 @@
-from config.data import password
-
 createtable = {
     "Mem": "CREATE TABLE IF NOT EXISTS Member (Member_Id int, PRIMARY KEY(Member_Id), first_name VARCHAR(255), last_name VARCHAR(255), date_of_birth DATE, Books_Borrowed VARCHAR(255), No_of_Borrows int,  Phone VARCHAR(255))",
-    "Issue": "CREATE TABLE IF NOT EXISTS Issues (Issue_Id int,  PRIMARY KEY(Issue_Id), Item_Id int, Title VARCHAR(255), Date_Issued DATE, Date_Due DATE)",
+    "Issue": "CREATE TABLE IF NOT EXISTS Issues (Issue_Id int,  PRIMARY KEY(Issue_Id), Item_Id int, Title VARCHAR(255), Date_Issued DATE, Date_Due DATE, Member_Id INT)",
     "Docs": "CREATE TABLE IF NOT EXISTS Documents(Doc_Id int, PRIMARY KEY(Doc_Id), Copies int, Issue_Id int, FOREIGN KEY(Issue_Id) references Issues(Issue_Id))",
     "Book": "CREATE TABLE IF NOT EXISTS Books(Book_Id int, PRIMARY KEY(Book_Id), Book_Title VARCHAR(255), Edition VARCHAR(255), Keywords VARCHAR(255), Genre VARCHAR(255), Topic VARCHAR(255), Authors VARCHAR(255), Publication_Date DATE)",
     "Mags": "CREATE TABLE IF NOT EXISTS Magazines(Mag_Id Integer PRIMARY KEY, FOREIGN KEY(Mag_Id) references Documents(Doc_Id), Title VARCHAR(255), Issue VARCHAR(255), Publication_Date DATE, Editors VARCHAR(255), Contributors VARCHAR(255), Keywords VARCHAR(255),  Genre VARCHAR(255), Topic VARCHAR(255))",
@@ -12,14 +10,19 @@ createtable = {
 
 
 sql = {
+    'getMemberBorrows': 'SELECT Books_Borrowed, No_of_Borrows from Librarian.Member WHERE Member_Id = {_id};',
+    'update': 'UPDATE Librarian.{_tbl} SET ',
+    'selectbyId': "SELECT * FROM Librarian.{_tbl} WHERE {_idtype} = {_id};",
     'searchDocs': "SELECT * FROM Librarian.{_tbl} WHERE ",
-    'insertIssues': 'INSERT INTO Librarian.Issues(Title, Date_Issued, Date_Due, Doc_id) VALUES({_ttl},{_date},{_due}, {_docid})',
+    'insertIssues': 'INSERT INTO Librarian.Issues(Title, Date_Issued, Date_Due, Item_Id, Member_Id) VALUES({_ttl},{_date},{_due}, {_docid}, {_memid});',
     'returnDoc': 'DELETE FROM Librarian.Issues WHERE Issue_Id = {_id}',
     'updateMemberIssues': "UPDATE Librarian.Member SET No_of_Borrows = {_borrows}, Books_Borrowed = {_books}",
     'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM Librarian.Member WHERE ",
     'memberlogin': 'SELECT * FROM Librarian.Member WHERE Member_Id = {_id}',
-    'getDocDetails': '"SELECT * from Librarian.Documents WHERE Doc_Id = {_id};"',
-    'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";'
+    'getDocDetails': 'SELECT * from Librarian.Documents WHERE Doc_Id = {_id};',
+    'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";',
+    'getMemberIssues': 'SELECT * FROM Librarian.Issues where Member_Id = {_memid};',
+    'selectMembers': "SELECT * FROM Librarian.Member WHERE Member_Id = {_memid};"
 }
 
 columns = {

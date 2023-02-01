@@ -1,24 +1,27 @@
-import datetime
+from datetime import datetime
 import traceback
 
 import mysql.connector
 
-import config.data
-from config import dbconfig, dbconfig as dbcfg
+import data.data
+from config import dbconfig as dbcfg
 import sys
 import logging
 
+from util.queryCollection import QueryCollection
+
 logger = logging.getLogger()
 mem_id = None
-mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=config.data.password, )
+mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.data.password, )
 mycursor = mydb.cursor(buffered=True)
+mycursor2 = mydb.cursor(buffered=True)
 
 
 class App:
     def __init__(self):
         self.mydb = None
         self.mycursor = None
-        self.password = config.data.password
+        self.password = data.data.password
         self.member_id = None
 
     def setMemberId(self, id):
@@ -56,7 +59,7 @@ class App:
     def createTables(self):
         # if table does not exist, create it
         creates = dbcfg.createtable
-        tables = config.data.tables
+        tables = data.data.tables
         for k, v in creates.items():
             try:
                 self.mycursor.execute("USE Librarian")
@@ -172,62 +175,34 @@ class App:
             logger.info("getRecords Data: " + str(data))
             return data
 
-        def borrowDocument(self, doctype, doc_id, book_id, data):
-
-            # if copies > 0 documents + decrement copies
-            try:
-                sql = dbcfg.sql['getDocDetails'].replace('{_id}', str(doc_id))
-            except Exception as e:
-                logger.error("Error making sql docdetails: " + str(e) + traceback.format_exc())
-                sys.exit(-1)
-
-            logger.info("borrowDocument getDocDetails SQL: " + sql)
-            try:
-                self.cursor.execute(sql)
-                rows = self.cursor.fetchall()
-                if rows[0]['Copies'] == 0:
-                    return 0
-
-            except Exception as e:
-                logger.error("Error in getting document details: " + str(e) + traceback.format_exc())
-                sys.exit(-1)
-
-            # Issues table insert new field
-            QueryCollection.issues('insert', None, self.cursor, data)
+        def borrowDocument(self, doctype, doc_id, book_id, data, mem_id):
+            if QueryCollection.alreadyBorrowed(QueryCollection, doc_id, mem_id) == 1:
+                return 1
+            copies = QueryCollection.checkZeroDocs(QueryCollection, doc_id)
+            if copies == 0:
+                return 0
+            copies -= 1
+            QueryCollection.decrementCopies(QueryCollection, copies, "Documents", doc_id)
+            QueryCollection.insertIssue(QueryCollection, data, doc_id)
+            QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id)
 
 
-            # Increment Members # of issues SELECT Member number of issues, +1 and then update
-
-            pass
-
-        def returnDocument(self, doctype, id):
+        def returnDocument(self, doctype, doc_id, book_id):
             # delete from issues table
-            # increment copy count
-            # decrement user's no of issues
+            # increment copy count in documents
+            # decrement user's no of issues and remove title from string of borrowed books
             pass
 
-
-class QueryCollection:
-
-    def issues(self, operation, parameter,cursor, data):
-        if operation=='select':
-            pass
-
-        elif operation=='update':
-            pass
-
-        elif operation=='insert':
-            sql = dbcfg.sql['insertIssues'].replace('{_ttl}', data['Title']).replace('{_date}', data['Date_Issued']).replace('{_due}',data["Date_Due"]).replace("{_docid}", data['Doc_id'])
-            logger.info("Issues SQL Insert: " + sql)
+        def getIssuesbyMemId(self, mem_id):
+            sql = dbcfg.sql['getMemberIssues'].replace('{_memid}', str(mem_id))
+            logger.info("getIssuesbyMemId sql: " + sql)
             try:
-                cursor.execute(sql)
-                cursor.fetchall()
-                logger.info("Issues - Inserted " + str(cursor.rowcount) + " rows")
+                mycursor.execute(sql)
+                rows = mycursor.fetchall()
+                return rows
+
             except Exception as e:
-                logger.error("Error in Issues SQL: " + str(e) + traceback.format_exc())
-                sys.exit(-1)
+                logger.error("Error in getIssuesbyMemId : " + str(e) + traceback.format_exc())
 
 
-        else:
-            logger.error("No replace or delete methods. Try select or update")
-            sys.exit(-1)
+
