@@ -88,6 +88,16 @@ class App:
         def createStaffAccount(self, data):
             # random 6 digit int as ID
             self.lib_id = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+            data[0] = self.lib_id
+
+            sql = dbcfg.sql['insertStaff']
+            try:
+                mycursor.execute(sql, data)
+                mydb.commit()
+                logger.info("Inserted into Staff number of rows: " + str(mycursor.rowcount))
+            except Exception as e:
+                logger.error("Error in insertStaff : " + str(e) + traceback.format_exc())
+                sys.exit(-1)
 
 
         # def addDocument(self, doctype):

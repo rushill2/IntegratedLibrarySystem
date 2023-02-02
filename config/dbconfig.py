@@ -23,7 +23,8 @@ sql = {
     'getDocDetails': 'SELECT * from Librarian.Documents WHERE Doc_Id = {_id};',
     'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";',
     'getMemberIssues': 'SELECT * FROM Librarian.Issues where Member_Id = {_memid};',
-    'selectMembers': "SELECT * FROM Librarian.Member WHERE Member_Id = {_memid};"
+    'selectMembers': "SELECT * FROM Librarian.Member WHERE Member_Id = {_memid};",
+    'insertStaff': "INSERT INTO Librarian.Staff (Staff_Id, FIrstName, LastName, DOB, Phone, EMail, Password) VALUES (%s, %s, %s, %s, %s, %s, %s);"
 }
 
 columns = {
