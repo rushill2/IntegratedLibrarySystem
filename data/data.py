@@ -47,3 +47,5 @@ password = "Thehighground@773"
 memberid = None
 
 inputvalues = {}
+
+specials = "!@#$%^&*()-+?_=,<>/"

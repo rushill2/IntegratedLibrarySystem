@@ -1,4 +1,4 @@
-from uitest import SampleApp
+from mainFragment import SampleApp
 import sys
 from PyQt5.QtWidgets import *
 import logging

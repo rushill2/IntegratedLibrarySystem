@@ -8,6 +8,7 @@ from util.kinterUtilities import KinterUtilities
 from pages.member.memberVerification import MemberVerification
 from pages.member.searchBooks import SearchBooks
 import logging
+from pages.member.booksBorrowed import BookBorrows
 
 logger = logging.getLogger()
 
@@ -30,6 +31,7 @@ class SearchResults(tk.Frame):
 
     def populateResults(self, filters, controller):
         self.view.grid_forget()
+
         self.view = tk.Button(self, text="Back", command=lambda: controller.show_frame("SearchBooks"))
         self.view.grid(ipady=5, ipadx=10)
         document = self.app.Member(MemberVerification.mem_id, self.app).searchDocument(SearchBooks.inputvalues, "Books")
@@ -66,10 +68,12 @@ class SearchResults(tk.Frame):
             self.borrow.grid_forget()
 
         else:
+            BookBorrows.intro_msg = "Book borrowed! \n" + BookBorrows.intro_msg
+            BookBorrows.prev_page = "SearchResults"
             controller.show_frame("BookBorrows")
 
 
     def returnBook(self, data, controller, row):
         doc_id = data[0]
         book_id = data[1]
-        self.member.returnDocument("Books", )
+        self.member.returnDocument("Books", doc_id, book_id)

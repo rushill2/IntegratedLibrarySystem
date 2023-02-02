@@ -6,11 +6,15 @@ import traceback
 from app import App
 from pages.member.memberVerification import MemberVerification
 from pages.member.searchBooks import SearchBooks
-from pages.member.searchResults import logger
+import logging
 from util.kinterUtilities import KinterUtilities
+
+logger = logging.getLogger()
 
 
 class BookBorrows(tk.Frame):
+    intro_msg = "Here are your borrows: "
+    prev_page = "SearchResults"
     def __init__(self, parent, controller):
         t = time.time()
         self.tkutil = KinterUtilities(parent)
@@ -20,14 +24,13 @@ class BookBorrows(tk.Frame):
         self.controller = controller
         logger.info("BookBorrows ready. Took " + str(time.time() - t) + " seconds")
         filters = SearchBooks.inputvalues
-        label = tk.Label(self, text="Book Borrowed Succesfully! \n Here are your borrows: ",
-                         font=controller.title_font)
+        label = tk.Label(self, text=BookBorrows.intro_msg, font=controller.title_font)
         label.grid(ipady=10, ipadx=10)
 
         self.button = tk.Button(self, text='View Issues', command=lambda:self.populateIssues(controller))
-        self.view = tk.Button(self, text="Back", command=lambda: controller.show_frame("SearchResults"))
+        self.view = tk.Button(self, text="Back", command=lambda: controller.show_frame(BookBorrows.prev_page))
         self.view.grid(ipady=5, ipadx=10)
-        self.button.grid()
+        self.button.grid(ipady=5, ipadx=10)
 
 
     def populateIssues(self, controller):

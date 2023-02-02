@@ -1,6 +1,6 @@
 from datetime import datetime
 import traceback
-
+from random import randint
 import mysql.connector
 
 import data.data
@@ -81,11 +81,16 @@ class App:
             logger.error("Validate Error" + str(e) + traceback.format_exc())
             return False
 
-    # class Librarian:
-    #     def __init__(self, id):
-    #         self.lib_id = id
-    #
-    #     def addDocument(self, doctype):
+    class Librarian:
+        def __init__(self, id):
+            self.lib_id = id
+
+        def createStaffAccount(self, data):
+            # random 6 digit int as ID
+            self.lib_id = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+
+
+        # def addDocument(self, doctype):
     #
     #     def editDocument(self, doctype):
     #
@@ -182,16 +187,24 @@ class App:
             if copies == 0:
                 return 0
             copies -= 1
-            QueryCollection.decrementCopies(QueryCollection, copies, "Documents", doc_id)
+            QueryCollection.alterCopyCount(QueryCollection, copies, "Documents", doc_id)
             QueryCollection.insertIssue(QueryCollection, data, doc_id)
-            QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id)
+            QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id, 'borrow')
 
 
         def returnDocument(self, doctype, doc_id, book_id):
             # delete from issues table
+            QueryCollection.deleteIssues(QueryCollection, doc_id)
+
             # increment copy count in documents
+            copies = QueryCollection.checkZeroDocs(QueryCollection, doc_id)
+            copies += 1
+            QueryCollection.alterCopyCount(QueryCollection, copies, "Documents", doc_id)
+
             # decrement user's no of issues and remove title from string of borrowed books
-            pass
+            QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id, 'return')
+
+
 
         def getIssuesbyMemId(self, mem_id):
             sql = dbcfg.sql['getMemberIssues'].replace('{_memid}', str(mem_id))

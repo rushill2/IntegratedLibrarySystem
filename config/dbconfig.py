@@ -15,6 +15,7 @@ sql = {
     'selectbyId': "SELECT * FROM Librarian.{_tbl} WHERE {_idtype} = {_id};",
     'searchDocs': "SELECT * FROM Librarian.{_tbl} WHERE ",
     'insertIssues': 'INSERT INTO Librarian.Issues(Title, Date_Issued, Date_Due, Item_Id, Member_Id) VALUES({_ttl},{_date},{_due}, {_docid}, {_memid});',
+    'deleteIssues': "DELETE FROM Librarian.Issues WHERE Item_Id = {_id}",
     'returnDoc': 'DELETE FROM Librarian.Issues WHERE Issue_Id = {_id}',
     'updateMemberIssues': "UPDATE Librarian.Member SET No_of_Borrows = {_borrows}, Books_Borrowed = {_books}",
     'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM Librarian.Member WHERE ",
