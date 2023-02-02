@@ -78,6 +78,7 @@ class LoginLibrarian(tk.Frame):
 
 
 class CreateLibrarian(tk.Frame):
+    clickcnt = 0
     # TODO: add passwords and confirm password fields after input validation
     def __init__(self, parent, controller):
         t = time.time()
@@ -96,7 +97,7 @@ class CreateLibrarian(tk.Frame):
         formlabel.grid(row=6, column=3)
         self.loginForm()
         submit = tk.Button(self, text="Submit",
-                         command=lambda: self.validateStaffAccount(formlabel))
+                           command=lambda: self.validateStaffAccount(formlabel))
         submit.grid(sticky=tk.E)
 
     def validateStaffAccount(self, formlabel):
@@ -127,7 +128,7 @@ class CreateLibrarian(tk.Frame):
             else:
                 formlabel['text'] = "Passwords must be alphanumeric and contain special chatracters"
         else:
-            formlabel['text']= "Passwords do not match"
+            formlabel['text'] = "Passwords do not match"
 
         # check name
         if first.isalpha() and last.isalpha():
@@ -136,7 +137,7 @@ class CreateLibrarian(tk.Frame):
             formlabel['text'] = "Names must only contain alphabets"
 
         # check email, must contain @ and .com, and length > 5
-        if any(s=="@" for s in email) and ".com" in email and len(email)>5:
+        if any(s == "@" for s in email) and ".com" in email and len(email) > 5:
             emailbool = True
         else:
             formlabel['text'] = "Not a valid email"
@@ -166,13 +167,6 @@ class CreateLibrarian(tk.Frame):
             data = [None, first, last, dob, phone, email, hash]
             self.app.Librarian().createStaffAccount(data)
 
-
-
-
-
-
-
-
     def loginForm(self):
         a = tk.Label(self, text="First Name")
         a.grid(row=0, column=2)
@@ -188,17 +182,32 @@ class CreateLibrarian(tk.Frame):
         e.grid(row=5, column=2)
         e = tk.Label(self, text="Confirm Password")
         e.grid(row=6, column=2)
-        a1 = tk.Entry(self, textvariable= self.firstname)
+        a1 = tk.Entry(self, textvariable=self.firstname)
         a1.grid(row=0, column=3)
-        b1 = tk.Entry(self, textvariable= self.lastname)
+        b1 = tk.Entry(self, textvariable=self.lastname)
         b1.grid(row=1, column=3)
-        c1 = tk.Entry(self, textvariable= self.email)
+        c1 = tk.Entry(self, textvariable=self.email)
         c1.grid(row=2, column=3)
-        d1 = tk.Entry(self, textvariable= self.phone)
+        d1 = tk.Entry(self, textvariable=self.phone)
         d1.grid(row=3, column=3)
-        e1 = tk.Entry(self, textvariable= self.dob)
+        e1 = tk.Entry(self, textvariable=self.dob)
         e1.grid(row=4, column=3)
-        f1 = tk.Entry(self, textvariable= self.password)
+        f1 = tk.Entry(self, textvariable=self.password, show="*")
         f1.grid(row=5, column=3)
-        g1 = tk.Entry(self, textvariable= self.retype_pass)
+        g1 = tk.Entry(self, textvariable=self.retype_pass, show="*")
         g1.grid(row=6, column=3)
+        showpass = tk.Button(self, text="Show Password",
+                             command=lambda: self.password_visible(f1, g1, showpass))
+        showpass.grid(row=5, column=4, ipadx = 10)
+
+    def password_visible(self, passw, retype, showpass):
+        CreateLibrarian.clickcnt += 1
+
+        if CreateLibrarian.clickcnt % 2 == 0:
+            showpass.config(text='Show Password')
+            passw.config(show="*")
+            retype.config(show="*")
+        else:
+            showpass.config(text='Hide Password')
+            passw.config(show="")
+            retype.config(show="")

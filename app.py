@@ -82,8 +82,8 @@ class App:
             return False
 
     class Librarian:
-        def __init__(self, id):
-            self.lib_id = id
+        def __init__(self):
+            self.lib_id = None
 
         def createStaffAccount(self, data):
             # random 6 digit int as ID
