@@ -45,7 +45,7 @@ class SearchBooks(tk.Frame):
         clear = tk.Button(self, text="Clear Filters", command=lambda: self.clearFilters())
         clear.pack(pady=5, padx=10, side=tk.RIGHT)
 
-        view = tk.Button(self, text="View Issues", command=lambda: controller.show_frame("BookBorrows"))
+        view = tk.Button(self, text="Back", command=lambda: controller.show_frame("SearchHome"))
         view.pack(pady=5, padx=10, side=tk.LEFT)
 
     def clearFilters(self):

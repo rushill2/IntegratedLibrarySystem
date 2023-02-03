@@ -12,9 +12,6 @@ from util.queryCollection import QueryCollection
 
 logger = logging.getLogger()
 mem_id = None
-mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.data.password, )
-mycursor = mydb.cursor(buffered=True)
-mycursor2 = mydb.cursor(buffered=True)
 
 
 class App:
@@ -35,19 +32,16 @@ class App:
     def populate(self):
         try:
             # create librarian db if it doesn't exist
-            global mydb
-            global mycursor
-            self.mydb = mydb
-            self.mycursor = mycursor
-
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             try:
-                self.mycursor.execute("SHOW DATABASES")
+                mycursor.execute("SHOW DATABASES")
                 dblist = []
-                for db in self.mycursor:
+                for db in mycursor:
                     dblist.append(db)
                 logger.info("Currently we have databases: " + str(dblist))
                 if not ('Librarian',) in dblist:
-                    self.mycursor.execute("CREATE DATABASE Librarian")
+                    mycursor.execute("CREATE DATABASE Librarian")
+                    mydb.close()
                 self.createTables()
             except Exception as e:
                 logger.error("Error in creating cursor: " + str(e) + traceback.format_exc())
@@ -62,8 +56,10 @@ class App:
         tables = data.data.tables
         for k, v in creates.items():
             try:
-                self.mycursor.execute("USE Librarian")
-                self.mycursor.execute(v)
+                mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+                mycursor.execute("USE Librarian")
+                mycursor.execute(v)
+                mydb.close()
             except Exception as e:
                 logger.error("Error in createTables: " + str(e) + traceback.format_exc())
                 sys.exit(-2)
@@ -71,11 +67,13 @@ class App:
     def validateLogin(self, id):
         sql = dbcfg.sql['memberlogin'].replace('{_id}', str(id))
         try:
-            self.mycursor.execute(sql)
-            self.mycursor.fetchall()
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            mycursor.fetchall()
             self.setMemberId(id)
             logger.info("Validation SQL: " + sql)
-            logger.info("Found " + str(self.mycursor.rowcount) + " rows")
+            logger.info("Found " + str(mycursor.rowcount) + " rows")
+            mydb.close()
             return True
         except Exception as e:
             logger.error("Validate Error" + str(e) + traceback.format_exc())
@@ -92,9 +90,11 @@ class App:
 
             sql = dbcfg.sql['insertStaff']
             try:
+                mydb, mycursor = QueryCollection.connectDB(QueryCollection)
                 mycursor.execute(sql, data)
                 mydb.commit()
                 logger.info("Inserted into Staff number of rows: " + str(mycursor.rowcount))
+                mydb.close()
             except Exception as e:
                 logger.error("Error in insertStaff : " + str(e) + traceback.format_exc())
                 sys.exit(-1)
@@ -117,8 +117,6 @@ class App:
 
         def __init__(self, id, app):
             self.mem_id = id
-            global mycursor
-            self.cursor = mycursor
 
         def setSearchResults(self, results):
             self.search_results = results
@@ -145,24 +143,23 @@ class App:
 
                 if i < len(list(params.values())) - 1:
                     sql += " AND "
-
-
-
             try:
                 logger.info("searchDocument SQL: " + sql)
-                self.cursor.execute(sql)
-                self.cursor.fetchall()
-                if self.cursor.rowcount == 0:
+                mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+                mycursor.execute(sql)
+                rows = mycursor.fetchall()
+                if mycursor.rowcount == 0:
                     return ""
                 names = []
                 i = 0
-                for r in self.cursor._rows:
+                for r in rows:
                     if i == 0:
                         names.append(dbcfg.columns['Books'])
                     names.append(r)
                     i += 1
 
                 self.setSearchResults(names)
+                mydb.close()
                 return names
 
             except Exception as e:
@@ -184,10 +181,12 @@ class App:
                     "{_title}", name)
 
             logger.info("getRecords SQL: " + sql)
-            self.cursor.execute(sql)
-            self.cursor.fetchall()
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            mycursor.fetchall()
             data = self.cursor._rows[0]
             logger.info("getRecords Data: " + str(data))
+            mydb.close()
             return data
 
         def borrowDocument(self, doctype, doc_id, book_id, data, mem_id):
@@ -209,10 +208,10 @@ class App:
             # increment copy count in documents
             copies = QueryCollection.checkZeroDocs(QueryCollection, doc_id)
             copies += 1
-            QueryCollection.alterCopyCount(QueryCollection, copies, "Documents", doc_id)
 
             # decrement user's no of issues and remove title from string of borrowed books
             QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id, 'return')
+            QueryCollection.alterCopyCount(QueryCollection, copies, "Documents", doc_id)
 
 
 
@@ -220,8 +219,10 @@ class App:
             sql = dbcfg.sql['getMemberIssues'].replace('{_memid}', str(mem_id))
             logger.info("getIssuesbyMemId sql: " + sql)
             try:
+                mydb, mycursor = QueryCollection.connectDB(QueryCollection)
                 mycursor.execute(sql)
                 rows = mycursor.fetchall()
+                mydb.close()
                 return rows
 
             except Exception as e:

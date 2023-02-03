@@ -38,8 +38,18 @@ class BookBorrows(tk.Frame):
         cells = {}
         issues.append(("Num1", "Num2", "Title", "Date Issued", "Date Due"))
         issues.reverse()
-        if len(issues)==0:
-            pass
+        if len(issues)==1:
+            # create empty list, max 5 borrows
+            # TODO: ENFORCE MAX 5 borrows
+            for i in range(5):
+                for j in range(2, len(issues[0])):
+                    try:
+                        slaves = tk.Frame.grid_slaves(self, row=i, column=j)
+                        if len(slaves)>0:
+                            slaves[0].grid_forget()
+                    except Exception as e:
+                        logger.error("Error in Deleting old issues: " + str(e) + traceback.format_exc())
+                        sys.exit(-1)
 
         for i in range(len(issues)):
             for j in range(2, len(issues[0])):
