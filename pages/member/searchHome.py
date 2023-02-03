@@ -3,7 +3,11 @@ import tkinter as tk
 
 import app
 import logging
+
+from data.dataVault import DataVault
 from pages.member.booksBorrowed import BookBorrows
+from util.memberSQL import Member
+
 logger = logging.getLogger()
 
 
@@ -24,7 +28,13 @@ class SearchHome(tk.Frame):
         mags.pack(pady=1, padx=10)
         button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
         button.pack(pady=10, padx=10, side=tk.LEFT)
-        BookBorrows.prev_page = "SearchHome"
-        issuebtn = tk.Button(self, text="View Issues", command=lambda: controller.show_frame("BookBorrows"))
+        DataVault.bookborrows_prev = "SearchHome"
+        issuebtn = tk.Button(self, text="View Issues", command=lambda: self.preloadIssues(controller))
         issuebtn.pack(pady=10, padx=10, side=tk.RIGHT)
         logger.info("SearchHome ready. Took " + str(time.time() - t) + " seconds")
+
+    def preloadIssues(self, controller):
+        DataVault.issues = Member(DataVault.mem_id, self.app).getIssuesbyMemId(DataVault.mem_id)
+        DataVault.populateIssues(DataVault, controller)
+
+        controller.show_frame("BookBorrows")

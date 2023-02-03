@@ -1,18 +1,21 @@
 import time
 import tkinter as tk
 
-import data.data
+import data.dumps
+from data.dataVault import DataVault
 from util.kinterUtilities import KinterUtilities
 import app
 import logging
+
+from util.memberSQL import Member
 
 logger = logging.getLogger()
 
 
 class SearchBooks(tk.Frame):
-    inputvalues = {}
 
     def __init__(self, parent, controller):
+        DataVault.searchBooks = self
         self.tkutil = KinterUtilities(parent)
         self.controller = controller
         t = time.time()
@@ -29,8 +32,8 @@ class SearchBooks(tk.Frame):
         self.filter_entry.pack(side=tk.LEFT, padx=10)
         # options menu
         self.opts = tk.StringVar(self)
-        self.opts.set(data.data.filters[0])
-        options = tk.OptionMenu(self, self.opts, *data.data.filters)
+        self.opts.set(data.dumps.filters[0])
+        options = tk.OptionMenu(self, self.opts, *data.dumps.filters)
         options.pack(side=tk.LEFT, padx=10)
         logger.info("SearchBooks ready. Took " + str(time.time() - t) + " seconds")
 
@@ -38,7 +41,7 @@ class SearchBooks(tk.Frame):
         self.inputvalues = {}
         setfilter = tk.Button(self, text="Set Filter", command=lambda: self.addFilters(controller))
         setfilter.pack(pady=5, padx=10, side=tk.RIGHT)
-        search = tk.Button(self, text="Next", command=lambda: controller.show_frame("SearchResults"))
+        search = tk.Button(self, text="Search", command=lambda: self.preloadResults(controller))
         search.pack(pady=5, padx=10, side=tk.RIGHT)
 
         # clearfilters
@@ -50,14 +53,19 @@ class SearchBooks(tk.Frame):
 
     def clearFilters(self):
         self.inputvalues = {}
-        SearchBooks.inputvalues = {}
+        DataVault.inputvalues = {}
         self.label['text'] = "Set filters and search:"
 
     def addFilters(self, controller):
         self.inputvalues[self.opts.get()] = self.filter_entry.get()
-        SearchBooks.inputvalues[self.opts.get()] = self.filter_entry.get()
+        DataVault.inputvalues[self.opts.get()] = self.filter_entry.get()
         filters_set = list(self.inputvalues.keys())
         if len(filters_set) > 0:
             self.label['text'] = "Filters Set: " + str(filters_set)
         else:
             self.label['text'] = "Set filters and search:"
+
+    def preloadResults(self, controller):
+        document = Member(DataVault.mem_id, DataVault.searchRes.app).searchDocument(DataVault.inputvalues, "Books")
+        DataVault.populateResults(DataVault, controller, document)
+        controller.show_frame("SearchResults")

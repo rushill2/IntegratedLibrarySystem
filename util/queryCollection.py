@@ -2,12 +2,13 @@ import sys
 import traceback
 from datetime import datetime, timedelta
 from config import dbconfig as dbcfg
+from data.dataVault import DataVault
 from pages.member.memberVerification import MemberVerification
 import logging, mysql.connector
 
-import data.data
+import data.dumps
 
-mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.data.password, autocommit=True)
+mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, autocommit=True)
 mycursor = mydb.cursor(buffered=True)
 logger = logging.getLogger()
 
@@ -16,10 +17,11 @@ class QueryCollection:
     # checks if no docs of that id present, else returns count
 
     def connectDB(self):
-        mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.data.password, )
+        mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, )
         mycursor = mydb.cursor(buffered=True)
         return mydb, mycursor
-    def checkZeroDocs(self,doc_id):
+
+    def checkZeroDocs(self, doc_id):
         sql = dbcfg.sql['getDocDetails'].replace('{_id}', str(doc_id))
         logger.info("borrowDocument getDocDetails SQL: " + sql)
         try:
@@ -28,10 +30,11 @@ class QueryCollection:
             try:
                 rows = mycursor.fetchall()
                 mydb.close()
-                if rows[0][1] == 0:
-                    return 0
-                else:
-                    return rows[0][1]
+                if len(rows) > 0:
+                    if rows[0][1] == 0:
+                        return 0
+                    else:
+                        return rows[0][1]
             except Exception as e:
                 logger.error("Other error " + str(e) + traceback.format_exc())
                 sys.exit(-1)
@@ -41,7 +44,7 @@ class QueryCollection:
             sys.exit(-1)
 
     # gets from issue table via docid
-    def getIssuebyDocId(self,doc_id):
+    def getIssuebyDocId(self, doc_id):
         sql = dbcfg.sql['selectbyId'].replace('{_tbl}', "Issues").replace('{_idtype}', "Doc_Id").replace("{_id}",
                                                                                                          doc_id)
         logger.info("SelectbyId for Issues Doc_id: " + sql)
@@ -59,7 +62,8 @@ class QueryCollection:
 
     # decrement copies from documents table
     def alterCopyCount(self, copies, table, doc_id):
-        sql = dbcfg.sql['update'].replace('{_tbl}', "Documents") + "Copies = " + str(copies) + ', Member_Id=' + str(MemberVerification.mem_id) + " WHERE doc_id = " + str(doc_id) + ';'
+        sql = dbcfg.sql['update'].replace('{_tbl}', "Documents") + "Copies = " + str(copies) + ', Member_Id=' + str(
+            DataVault.mem_id) + " WHERE doc_id = " + str(doc_id) + ';'
 
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
@@ -76,8 +80,10 @@ class QueryCollection:
         date = datetime.today() + timedelta(days=14)
         returndate = str(date.strftime('%Y-%m-%d'))
         issuedate = str(datetime.today().strftime('%Y-%m-%d'))
-        sql = dbcfg.sql['insertIssues'].replace('{_ttl}','"' + choice[2] + '"').replace('{_date}','"' + issuedate + '"').replace(
-            '{_due}', '"' + returndate + '"').replace("{_docid}", str(doc_id)).replace('{_memid}', MemberVerification.mem_id)
+        sql = dbcfg.sql['insertIssues'].replace('{_ttl}', '"' + choice[2] + '"').replace('{_date}',
+                                                                                         '"' + issuedate + '"').replace(
+            '{_due}', '"' + returndate + '"').replace("{_docid}", str(doc_id)).replace('{_memid}',
+                                                                                       DataVault.mem_id)
         logger.info("Issues SQL Insert: " + sql)
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
@@ -89,7 +95,8 @@ class QueryCollection:
             logger.error("Error in Issues SQL: " + str(e) + traceback.format_exc())
             sys.exit(-1)
 
-         # increments present borrow count and adds to books_borrowed
+        # increments present borrow count and adds to books_borrowed
+
     def updateMemberBorrows(self, doc_id, mem_id, action):
         sql = dbcfg.sql['selectMembers'].replace('{_memid}', mem_id)
         try:
@@ -108,7 +115,7 @@ class QueryCollection:
                     issues = str(doc_id)
             else:
                 if action == 'borrow':
-                    if len(issues)==0:
+                    if len(issues) == 0:
                         issues += str(doc_id)
                     else:
                         issues += ',' + str(doc_id)
@@ -117,7 +124,8 @@ class QueryCollection:
                 else:
                     issues.replace(',' + str(doc_id), "")
 
-            sql = dbcfg.sql['update'].replace('{_tbl}', "Member").replace("{_idtype}", "Member_Id").replace("{_id}",mem_id)
+            sql = dbcfg.sql['update'].replace('{_tbl}', "Member").replace("{_idtype}", "Member_Id").replace("{_id}",
+                                                                                                            mem_id)
             sql += "No_of_Borrows = " + str(
                 issuenums) + ",  Books_Borrowed = " + '"' + issues + '"' + " WHERE Member_Id = " + mem_id + ';'
             logger.info('updayeMembers SQL; ' + sql)
@@ -142,9 +150,9 @@ class QueryCollection:
             mycursor.execute(sql)
             rows = mycursor.fetchall()
             mydb.close()
-            if len(rows)>0:
-                if len(rows[0])>0:
-                        return 1
+            if len(rows) > 0:
+                if len(rows[0]) > 0:
+                    return 1
 
 
         except Exception as e:

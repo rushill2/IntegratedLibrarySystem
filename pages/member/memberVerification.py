@@ -2,13 +2,12 @@ import time
 import tkinter as tk
 
 import logging
-
+from data.dataVault import DataVault
 logger = logging.getLogger()
 import app
 
 
 class MemberVerification(tk.Frame):
-    mem_id = None
     def __init__(self, parent, controller):
         t = time.time()
         logger.info("Opening LibrarianHome...")
@@ -46,7 +45,7 @@ class MemberVerification(tk.Frame):
         if self.app.validateLogin(entry):
             logger.info("Validation Successful! Welcome member " + entry)
             # setMember(entry)
-            MemberVerification.mem_id = entry
+            DataVault.mem_id = entry
             controller.show_frame('SearchHome')
         else:
             logger.error("Validation Failed. Try again.")

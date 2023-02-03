@@ -1,63 +1,45 @@
 import sys
+import threading
 import time
 import tkinter as tk
 import traceback
 
 from app import App
+from data.dataVault import DataVault
 from pages.member.memberVerification import MemberVerification
 from pages.member.searchBooks import SearchBooks
 import logging
 from util.kinterUtilities import KinterUtilities
+from util.memberSQL import Member
 
 logger = logging.getLogger()
 
 
 class BookBorrows(tk.Frame):
-    intro_msg = "Here are your borrows: "
-    prev_page = "SearchResults"
+
     def __init__(self, parent, controller):
+        DataVault.bookborrows_msg = tk.StringVar()
+        DataVault.bookborrows_msg.set("Here are your borrows:")
         t = time.time()
+        DataVault.BBorrows = self
         self.tkutil = KinterUtilities(parent)
         self.app = App()
         logger.info("Opening SearchResults...")
         tk.Frame.__init__(self, parent)
         self.controller = controller
         logger.info("BookBorrows ready. Took " + str(time.time() - t) + " seconds")
-        filters = SearchBooks.inputvalues
-        label = tk.Label(self, text=BookBorrows.intro_msg, font=controller.title_font)
+        filters = DataVault.inputvalues
+        label = tk.Label(self, textvariable=DataVault.bookborrows_msg, font=controller.title_font)
         label.grid(ipady=10, ipadx=10)
-
-        self.button = tk.Button(self, text='View Issues', command=lambda:self.populateIssues(controller))
-        self.view = tk.Button(self, text="Back", command=lambda: controller.show_frame(BookBorrows.prev_page))
+        self.member = Member(DataVault.mem_id, self.app)
+        self.view = tk.Button(self, text="Back", command=lambda: controller.show_frame(DataVault.bookborrows_prev))
         self.view.grid(ipady=5, ipadx=10)
-        self.button.grid(ipady=5, ipadx=10)
+        self.controller = controller
 
-
-    def populateIssues(self, controller):
-        issues = self.app.Member(MemberVerification.mem_id, self.app).getIssuesbyMemId(MemberVerification.mem_id)
-        cells = {}
-        issues.append(("Num1", "Num2", "Title", "Date Issued", "Date Due"))
-        issues.reverse()
-        if len(issues)==1:
-            # create empty list, max 5 borrows
-            # TODO: ENFORCE MAX 5 borrows
-            for i in range(5):
-                for j in range(2, len(issues[0])):
-                    try:
-                        slaves = tk.Frame.grid_slaves(self, row=i, column=j)
-                        if len(slaves)>0:
-                            slaves[0].grid_forget()
-                    except Exception as e:
-                        logger.error("Error in Deleting old issues: " + str(e) + traceback.format_exc())
-                        sys.exit(-1)
-
-        for i in range(len(issues)):
-            for j in range(2, len(issues[0])):
-                try:
-                    b = tk.Entry(self,justify=tk.CENTER)
-                    b.grid(row=i, column=j)
-                    b.insert(tk.END, str(issues[i][j]))
-                    cells[(i, j)] = b
-                except Exception as e:
-                    logger.error("Error in populateTable: " + str(e) + traceback.format_exc())
-                    sys.exit(-1)
+    def returnBook(self, data, controller, row):
+        DataVault.bookborrows_msg.set("Document returned!")
+        DataVault.borrowbuttons[row-1]['state'] = 'active'
+        doc_id = data[1]
+        self.member.returnDocument("Books", doc_id, row)
+        DataVault.issues = Member(DataVault.mem_id, self.app).getIssuesbyMemId(DataVault.mem_id)
+        DataVault.populateIssues(DataVault, controller)
