@@ -97,7 +97,22 @@ class Librarian:
             logger.error("Error in insertStaff : " + str(e) + traceback.format_exc())
             sys.exit(-1)
 
+    def createMemberAccount(self, data):
+        # random 6 digit int as ID
+        data[0] = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        sql = dbcfg.sql['insertMember']
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql, data)
+            mydb.commit()
+            logger.info("Inserted into Staff number of rows: " + str(mycursor.rowcount))
+            mydb.close()
+        except Exception as e:
+            logger.error("Error in insertStaff : " + str(e) + traceback.format_exc())
+            sys.exit(-1)
 
+    def validateLogin(self, values):
+        return QueryCollection.validateStaff(self, values)
         # def addDocument(self, doctype):
     #
     #     def editDocument(self, doctype):
@@ -110,6 +125,17 @@ class Librarian:
     #     def manageUsers(self, doctype):
     #         # TO-DO: Add or remove members
     #
+
+    def viewMembers(self):
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(dbcfg.sql['viewMembers'])
+            rows = mycursor.fetchall()
+            rows.insert(0, ('Member Id', 'First Name', 'Last Name', 'DOB', 'Books Borrowed', '# Borrows', 'Phone'))
+            return rows
+        except Exception as e:
+            logger.error("Error in QueryCollection viewMembers: " + str(e) + traceback.format_exc())
+            sys.exit(-1)
 
 
 

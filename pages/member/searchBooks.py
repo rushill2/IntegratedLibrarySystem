@@ -48,9 +48,11 @@ class SearchBooks(tk.Frame):
         clear = tk.Button(self, text="Clear Filters", command=lambda: self.clearFilters())
         clear.pack(pady=5, padx=10, side=tk.RIGHT)
 
-        view = tk.Button(self, text="Back", command=lambda: controller.show_frame("SearchHome"))
+        view = tk.Button(self, text="Back", command=lambda: self.goBack(controller))
         view.pack(pady=5, padx=10, side=tk.LEFT)
 
+    def goBack(self, controller):
+        controller.show_frame(DataVault.bookborrows_prev)
     def clearFilters(self):
         self.inputvalues = {}
         DataVault.inputvalues = {}

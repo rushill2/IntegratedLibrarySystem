@@ -96,7 +96,7 @@ class Member:
         copies -= 1
         QueryCollection.alterCopyCount(QueryCollection, copies, "Documents", doc_id)
         QueryCollection.insertIssue(QueryCollection, data, doc_id)
-        QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id, 'borrow')
+        return QueryCollection.updateMemberBorrows(QueryCollection, doc_id, mem_id, 'borrow')
 
 
     def returnDocument(self, doctype, doc_id , row):
@@ -127,5 +127,7 @@ class Member:
 
         except Exception as e:
             logger.error("Error in getIssuesbyMemId : " + str(e) + traceback.format_exc())
+
+
 
 

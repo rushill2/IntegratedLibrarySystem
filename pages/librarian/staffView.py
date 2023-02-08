@@ -1,108 +1,73 @@
-import sys
+import hashlib
 import time
 import tkinter as tk
 import traceback
-import hashlib
 from datetime import datetime
+import data.dumps as d
 
 import app
-from app import App
+from app import App, Librarian
+from data.dataVault import DataVault
 import logging
-import data.dumps as d
+
+from util.memberSQL import Member
 
 logger = logging.getLogger()
 
-
-class LibrarianHome(tk.Frame):
-
+class StaffView(tk.Frame):
     def __init__(self, parent, controller):
         t = time.time()
         self.app = App()
-        logger.info("Opening LibrarianHome...")
+        logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
+        self.staff = Librarian()
         self.controller = controller
-        label = tk.Label(self, text="Login or Create Account", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=20, padx=20)
+        label = tk.Label(self, text="Welcome! \n Pick your action", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10, padx=10)
+        books = tk.Button(self, text="View Documents", command=lambda: self.goToSearch(controller))
+        books.pack(pady=1, padx=10)
+        view_mem = tk.Button(self, text="View Members", command=lambda: self.preloadMembers(controller))
+        view_mem.pack(pady=1, padx=10)
+        create_mem = tk.Button(self, text="Create Member", command=lambda: self.controller.show_frame("CreateMember"))
+        create_mem.pack(pady=1, padx=10)
+        button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
+        button.pack(pady=10, padx=10, side=tk.LEFT)
+        DataVault.bookborrows_prev = "SearchHome"
+        logger.info("SearchHome ready. Took " + str(time.time() - t) + " seconds")
 
-        login = tk.Button(self, text="Login",
-                          command=lambda: controller.show_frame("LoginLibrarian"))
-        login.pack(pady=5, padx=10)
-        create = tk.Button(self, text="Create",
-                           command=lambda: controller.show_frame("CreateLibrarian"))
-        create.pack(pady=5, padx=10)
-        button = tk.Button(self, text="Home",
-                           command=lambda: controller.show_frame("StartPage"))
-        button.pack(pady=5, padx=10)
-        logger.info("LibrarianHome ready. Took " + str(time.time() - t) + " seconds")
+    def goToSearch(self, controller):
+        DataVault.bookborrows_prev = "StaffView"
+        controller.show_frame("SearchBooks")
+
+    def preloadMembers(self, controller):
+        rows = self.staff.viewMembers()
+        DataVault.viewMemberList = rows
+        DataVault.populateMembers(DataVault, controller, rows)
+        controller.show_frame("ViewMembers")
 
 
-class LoginLibrarian(tk.Frame):
-    mem_id = None
-
+class ViewMembers(tk.Frame):
     def __init__(self, parent, controller):
         t = time.time()
-        logger.info("Opening LibrarianHome...")
+        DataVault.viewMems = self
+        self.app = App()
+        self.member = Member(DataVault.mem_id, self.app)
+        logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
-        self.app = app.App()
-        self.app.populate()
+        self.staff = Librarian()
         self.controller = controller
-        self.label = tk.Label(self, text="Enter your details:", font=controller.title_font)
-        self.label.grid(row = 0, column = 3)
-        # description text
-        # buttons
-        home = tk.Button(self, text="Home",
-                         command=lambda: controller.show_frame("StartPage"))
-        # get value from entry when pressed
-        a = tk.Label(self, text="Email/Phone")
-        a.grid(row=2, column=2)
-        b = tk.Label(self, text="Password")
-        b.grid(row=3, column=2)
-        passw_var = tk.StringVar()
-        submit = tk.Button(self, text="Submit",
-                           command=lambda: self.login(controller, lib_id, passw_var))
-        lib_id = tk.StringVar()
-        self.id_entry = tk.Entry(self, textvariable=lib_id, font=('calibre', 10, 'normal'))
+        self.back = tk.Button(self, text="Back", command=lambda: controller.show_frame('StaffView'))
+        self.back.grid(row=0, column=8)
 
-        # displaying everything
-        self.id_entry.grid(row=2, column=3)
+    # TODO: Preload the overdues and issues for members
+    def preloadIssues(self, controller, row):
+        issues = self.member.getIssuesbyMemId(DataVault.viewMemberList[row][0])
+        pass
 
-        self.passw = tk.Entry(self, textvariable=passw_var, font=('calibre', 10, 'normal'))
+    def modifyMembers(self, controller):
+        pass
 
-        # displaying everything
-        self.passw.grid(row=3, column=3)
-        submit.grid(row=4, column=2)
-        home.grid(row=4, column=3)
-        logger.info("LoginLibrarian ready. Took " + str(time.time() - t) + " seconds")
-
-    def login(self, controller, lib_id, passw):
-        # SQL will be : SELECT * FROM Librarian.Staff WHERE id = lib_id
-        # if rowcount is 0, then say it's a bad login
-        # else if 1, good login, next page, view members or books (and for each member can view issues)
-
-        # first check if email or phone
-        if all(s.isdigit() for s in lib_id.get()):
-            login_type = "Phone"
-        else:
-            login_type = "Email"
-
-        # now compute password hash
-        hash = hashlib.md5(passw.get().encode("utf-8")).hexdigest()
-        values = (login_type, str(lib_id.get()), str(hash))
-
-        if app.Librarian().validateLogin(values):
-            # successful login, transition to other page
-            # next page should have options for view members (and modify once you're in the view) - same with documents
-            controller.show_frame("StaffView")
-
-        else:
-            # failed login, get fucked
-            self.label['text'] = "Invalid login, try again"
-
-
-
-
-
-class CreateLibrarian(tk.Frame):
+class CreateMember(tk.Frame):
     clickcnt = 0
     # TODO: add passwords and confirm password fields after input validation
     def __init__(self, parent, controller):
@@ -190,12 +155,10 @@ class CreateLibrarian(tk.Frame):
             formlabel['text'] = "Date must be in YYYY-MM-DD form"
             logger.error("Error in dob input validation: " + str(e) + traceback.format_exc())
 
-
-
         if phonebool and emailbool and namebool and passbool and dobbool:
             data = [None, first, last, dob, phone, email, hash]
-            app.Librarian().createStaffAccount(data)
-            controller.show_frame("StaffView")
+            app.Librarian().createMemberAccount(data)
+            formlabel['text'] = "Account Created! "
 
     def loginForm(self):
         a = tk.Label(self, text="First Name")
@@ -242,9 +205,9 @@ class CreateLibrarian(tk.Frame):
         showpass.grid(row=6, column=4, ipadx = 10)
 
     def password_visible(self, passw, retype, showpass):
-        CreateLibrarian.clickcnt += 1
+        CreateMember.clickcnt += 1
 
-        if CreateLibrarian.clickcnt % 2 == 0:
+        if CreateMember.clickcnt % 2 == 0:
             showpass.config(text='Show Password')
             passw.config(show="*")
             retype.config(show="*")

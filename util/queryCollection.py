@@ -98,6 +98,8 @@ class QueryCollection:
         # increments present borrow count and adds to books_borrowed
 
     def updateMemberBorrows(self, doc_id, mem_id, action):
+        # cpde 2 : too many borrows
+        # code 3 : mot enough books borrowed
         sql = dbcfg.sql['selectMembers'].replace('{_memid}', mem_id)
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
@@ -107,8 +109,12 @@ class QueryCollection:
             issues = rows[4]
             mydb.close()
             if action == 'borrow':
+                if issuenums + 1 > 5:
+                    return 2
                 issuenums += 1
             else:
+                if issuenums - 1 < 0:
+                    return 3
                 issuenums -= 1
             if not issues:
                 if action == 'borrow':
@@ -170,4 +176,18 @@ class QueryCollection:
 
         except Exception as e:
             logger.error("Error in returnDocument Member: " + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def validateStaff(self, values):
+        try:
+            sql = dbcfg.sql['loginStaff'].replace('{_login}', values[0]).replace('{_input}', '"'+ values[1] + '"').replace('{_pass}', '"' + values[2] + '"')
+            mycursor.execute(sql)
+            rows = mycursor.fetchall()
+            if len(rows) == 0:
+                return False
+            else:
+                return True
+
+        except Exception as e:
+            logger.error("Error in validateLogin for Staff: " + str(e) + traceback.format_exc())
             sys.exit(-1)

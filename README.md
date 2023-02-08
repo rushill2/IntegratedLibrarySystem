@@ -1,5 +1,8 @@
-# IntegratedLibrarySystem
-Integrated Library System with the specifications mentioned below
+# Integrated Library System
+Integrated Library System with secure login, 2FA (TBA), search, issue, return functions
+
+# Instructions
+-  just run main.py!
 
 # Specifications
 
@@ -40,6 +43,18 @@ Can look up books, borrow books return books
 #### Module 4: Borrow/Return
 1. Issues table display TODO
 2. Remove button needed for state transition
+
+## DataVault
+Overarching data-store class that allows for pre-computing of values.
+Ex: moving from search to search results - search results table populated onclick 'borrow' on search, and reference stored in DataVault
+
+### Functions
+
+#### populateIssues(): 
+Pre-loader for documents already borrowed. Used by HomePage, and SearchResults. Runs when we trigger a state transition via button in these fragments. Also called when book is Returned, to 'refresh'
+
+#### populateResults():
+Pre-loader for document search. Used by HomePage, SearchBooks
 
 # Further work
 1. 2FA, security measures

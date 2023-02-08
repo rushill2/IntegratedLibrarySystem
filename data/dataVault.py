@@ -11,6 +11,7 @@ class DataVault:
     borrowbuttons = []
     bookborrows_msg = None
     bookborrows_prev = "SearchResults"
+    lib_login = False
     issues = []
     borrowarr = []
     returnarr = []
@@ -19,6 +20,8 @@ class DataVault:
     searchBooks = None
     inputvalues = {}
     searchRes = None
+    viewMems = None
+    viewMemberList = []
 
 
     def populateIssues(self, controller):
@@ -54,7 +57,6 @@ class DataVault:
                     sys.exit(-1)
 
     def populateResults(self, controller, document):
-        DataVault.searchRes.view.grid_forget()
         DataVault.searchRes.view = tk.Button(DataVault.searchRes, text="Back", command=lambda: controller.show_frame("SearchBooks"))
         DataVault.searchRes.view.grid(ipady=5, ipadx=10)
         logger.info("Results: " + str(document))
@@ -73,3 +75,21 @@ class DataVault:
             if i!=0:
                 DataVault.searchRes.borrow.grid(row=i, column=j+1)
                 DataVault.borrowbuttons.append(DataVault.searchRes.borrow)
+
+    def populateMembers(self, controller, data):
+        for i in range(len(data)):  # Rows
+            DataVault.viewMems.details = tk.Button(DataVault.viewMems, text="Details", command=lambda i=i: DataVault.viewMems.preloadIssues(controller, i))
+            DataVault.viewMems.modify = tk.Button(DataVault.viewMems, text="Modify",
+                                                   command=lambda: self.viewMems.modifyMembers(controller))
+            for j in range(1, len(data[1])):  # Columns
+                try:
+                    b = tk.Entry(DataVault.viewMems, justify=tk.CENTER)
+                    b.grid(row=i, column=j)
+                    b.insert(tk.END, str(data[i][j]))
+                except Exception as e:
+                    logger.error("Error in populateIssues: " + str(e) + traceback.format_exc())
+                    sys.exit(-1)
+            if i != 0:
+                DataVault.viewMems.details.grid(row=i, column= len(data[1]) + 1)
+                DataVault.viewMems.modify.grid(row=i, column=len(data[1]) + 2)
+

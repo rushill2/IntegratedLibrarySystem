@@ -45,6 +45,14 @@ class SearchResults(tk.Frame):
             self.labelvar.set('Book already borrowed!')
             self.label.grid(sticky=tk.NE)
 
+        elif borrowable == 2:
+            self.labelvar.set('Cannot borrow more than 5 books')
+            self.label.grid(sticky=tk.NE)
+
+        elif borrowable == 3:
+            self.labelvar.set('No books borrowed to return!')
+            self.label.grid(sticky=tk.NE)
+
         else:
             DataVault.issues = Member(DataVault.mem_id, self.app).getIssuesbyMemId(DataVault.mem_id)
             DataVault.populateIssues(DataVault, controller)
