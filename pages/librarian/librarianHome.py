@@ -38,6 +38,7 @@ class LibrarianHome(tk.Frame):
 
 class LoginLibrarian(tk.Frame):
     mem_id = None
+    clickCnt = 0
 
     def __init__(self, parent, controller):
         t = time.time()
@@ -66,11 +67,13 @@ class LoginLibrarian(tk.Frame):
         # displaying everything
         self.id_entry.grid(row=2, column=3)
 
-        self.passw = tk.Entry(self, textvariable=passw_var, font=('calibre', 10, 'normal'))
-
+        self.passw = tk.Entry(self, textvariable=passw_var, font=('calibre', 10, 'normal'), show='*')
+        showpass = tk.Button(self, text="Show Password",
+                           command=lambda: self.password_visible(self.passw, showpass))
         # displaying everything
         self.passw.grid(row=3, column=3)
         submit.grid(row=4, column=2)
+        showpass.grid(row=3, column=4, ipadx=5)
         home.grid(row=4, column=3)
         logger.info("LoginLibrarian ready. Took " + str(time.time() - t) + " seconds")
 
@@ -97,6 +100,16 @@ class LoginLibrarian(tk.Frame):
         else:
             # failed login, get fucked
             self.label['text'] = "Invalid login, try again"
+
+    def password_visible(self, passw, showpass):
+        LoginLibrarian.clickCnt += 1
+
+        if LoginLibrarian.clickCnt % 2 == 0:
+            showpass.config(text='Show Password')
+            passw.config(show="*")
+        else:
+            showpass.config(text='Hide Password')
+            passw.config(show="")
 
 
 

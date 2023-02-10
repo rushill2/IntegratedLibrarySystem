@@ -1,8 +1,27 @@
 # Integrated Library System
 Integrated Library System with secure login, 2FA (TBA), search, issue, return functions
+Ideal use case is on the Staff side of a Library DBMS
 
 # Instructions
+### To Run
 -  just run main.py!
+### First Time Setup
+- While there already is data in the server, the first step would be to create a Staff Account by choosing Librarian on the home page and then Create
+- Second, create member accounts
+- Now, users can log in as Librarian or Member and execute any of their actions
+
+# Security Features
+### Password Hashing
+Passwords are stored as an MD5 Hash. When logging in, the input's hash is computed and compared to stored hash
+
+### 2FA - In Progress
+- Optional two-factor authentication with phone number verification code and email+password
+
+### Password Reset - In Progress
+- Uses 2FA to verify and sends an email using the SMTP server for the email domain name with a code (since it's not a web app can't do a url)
+
+### Parametrized SQL
+Mainly to prevent injections. Input validation as well in order to prevent any mischief
 
 # Specifications
 
@@ -29,12 +48,12 @@ Able to create members and librarian accounts, lookup book journal or magazine e
 Can look up books, borrow books return books 
 
 #### Module 1: Login
-1. Currently via member id - progress to email pass and 2FA
-2. TODO - Functionality for forgot or reset password (2FA extension)
+1. Currently via email + pass with 2FA (In Progress)
+2. Email based verification for reset (In Progress)
 
 #### Module 2: Search
 1. TODO - Parametrized queries against SQLi
-2. Search filters and then view results 
+2. Set search filters and then view results 
 
 #### MOdule 3: Results
 1. TODO - State should be preserved on entering page
@@ -45,8 +64,13 @@ Can look up books, borrow books return books
 2. Remove button needed for state transition
 
 ## DataVault
-Overarching data-store class that allows for pre-computing of values.
-Ex: moving from search to search results - search results table populated onclick 'borrow' on search, and reference stored in DataVault
+- Overarching data-store class that allows for pre-computing of values.
+
+
+- Ex: moving from search to search results - search results table populated onclick 'borrow' on search, and reference stored in DataVault
+
+
+- Each trigger (button or other) to transition to next page calls a function that precomputes values and then loads those retrieved or updated rows into the UI before initializing that fragment
 
 ### Functions
 
@@ -56,10 +80,6 @@ Pre-loader for documents already borrowed. Used by HomePage, and SearchResults. 
 #### populateResults():
 Pre-loader for document search. Used by HomePage, SearchBooks
 
-# Further work
-1. 2FA, security measures
-2. CLeanup frontend and bind buttons
-3. 
 
 
 

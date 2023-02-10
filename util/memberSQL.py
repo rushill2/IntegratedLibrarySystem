@@ -128,6 +128,16 @@ class Member:
         except Exception as e:
             logger.error("Error in getIssuesbyMemId : " + str(e) + traceback.format_exc())
 
+    def deleteMember(self, id):
+        sql = dbcfg.sql['deleteMember'].replace('{_memid}', str(id))
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            mydb.commit()
+            mydb.close()
+        except Exception as e:
+            logger.error("Error in deleteMember : " + str(e) + traceback.format_exc())
+            sys.exit(-1)
 
 
 

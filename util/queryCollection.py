@@ -83,7 +83,7 @@ class QueryCollection:
         sql = dbcfg.sql['insertIssues'].replace('{_ttl}', '"' + choice[2] + '"').replace('{_date}',
                                                                                          '"' + issuedate + '"').replace(
             '{_due}', '"' + returndate + '"').replace("{_docid}", str(doc_id)).replace('{_memid}',
-                                                                                       DataVault.mem_id)
+                                                                                       str(DataVault.mem_id))
         logger.info("Issues SQL Insert: " + sql)
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
@@ -100,7 +100,7 @@ class QueryCollection:
     def updateMemberBorrows(self, doc_id, mem_id, action):
         # cpde 2 : too many borrows
         # code 3 : mot enough books borrowed
-        sql = dbcfg.sql['selectMembers'].replace('{_memid}', mem_id)
+        sql = dbcfg.sql['selectMembers'].replace('{_memid}', str(mem_id))
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             mycursor.execute(sql)
@@ -130,11 +130,10 @@ class QueryCollection:
                 else:
                     issues.replace(',' + str(doc_id), "")
 
-            sql = dbcfg.sql['update'].replace('{_tbl}', "Member").replace("{_idtype}", "Member_Id").replace("{_id}",
-                                                                                                            mem_id)
+            sql = dbcfg.sql['update'].replace('{_tbl}', "Member").replace("{_idtype}", "Member_Id").replace("{_id}",                                                                                       str(mem_id))
             sql += "No_of_Borrows = " + str(
-                issuenums) + ",  Books_Borrowed = " + '"' + issues + '"' + " WHERE Member_Id = " + mem_id + ';'
-            logger.info('updayeMembers SQL; ' + sql)
+                issuenums) + ",  Books_Borrowed = " + '"' + issues + '"' + " WHERE Member_Id = " + str(mem_id) + ';'
+            logger.info('updateMembers SQL; ' + sql)
             try:
                 mydb, mycursor = QueryCollection.connectDB(QueryCollection)
                 mycursor.execute(sql)

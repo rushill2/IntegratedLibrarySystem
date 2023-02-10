@@ -62,20 +62,23 @@ class App:
                 logger.error("Error in createTables: " + str(e) + traceback.format_exc())
                 sys.exit(-2)
 
-    def validateLogin(self, id):
-        sql = dbcfg.sql['memberlogin'].replace('{_id}', str(id))
+    def validateLogin(self, values):
+        sql = dbcfg.sql['memberlogin'].replace('{_login}', values[0]).replace('{_input}', '"' + values[1] + '"').replace(
+            '{_pass}', '"' + values[2] + '"')
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             mycursor.execute(sql)
-            mycursor.fetchall()
-            self.setMemberId(id)
+            rows = mycursor.fetchall()
             logger.info("Validation SQL: " + sql)
             logger.info("Found " + str(mycursor.rowcount) + " rows")
             mydb.close()
-            return True
+            if len(rows)>0:
+                return rows[0][0], True
+            else:
+                return None, False
         except Exception as e:
             logger.error("Validate Error" + str(e) + traceback.format_exc())
-            return False
+            return None, False
 
 class Librarian:
     def __init__(self):
@@ -100,6 +103,7 @@ class Librarian:
     def createMemberAccount(self, data):
         # random 6 digit int as ID
         data[0] = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        data.append(0)
         sql = dbcfg.sql['insertMember']
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
@@ -126,12 +130,15 @@ class Librarian:
     #         # TO-DO: Add or remove members
     #
 
-    def viewMembers(self):
+    def viewMembers(self, memid=None):
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            if memid != None:
+                where = " WHERE Member_Id=" + str(memid) + ';'
+                mycursor.execute(dbcfg.sql['viewMembers'] + where)
             mycursor.execute(dbcfg.sql['viewMembers'])
             rows = mycursor.fetchall()
-            rows.insert(0, ('Member Id', 'First Name', 'Last Name', 'DOB', 'Books Borrowed', '# Borrows', 'Phone'))
+            rows.insert(0, ('Member Id', 'First Name', 'Last Name', 'DOB', 'Books Borrowed', '# Borrows', 'Phone', 'Email'))
             return rows
         except Exception as e:
             logger.error("Error in QueryCollection viewMembers: " + str(e) + traceback.format_exc())

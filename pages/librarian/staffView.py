@@ -42,7 +42,7 @@ class StaffView(tk.Frame):
     def preloadMembers(self, controller):
         rows = self.staff.viewMembers()
         DataVault.viewMemberList = rows
-        DataVault.populateMembers(DataVault, controller, rows)
+        DataVault.populateMembers(DataVault, controller)
         controller.show_frame("ViewMembers")
 
 
@@ -61,10 +61,26 @@ class ViewMembers(tk.Frame):
 
     # TODO: Preload the overdues and issues for members
     def preloadIssues(self, controller, row):
-        issues = self.member.getIssuesbyMemId(DataVault.viewMemberList[row][0])
+        # display member information
+        try:
+            member = DataVault.viewMemberList[row][0]
+            issues = self.member.getIssuesbyMemId(member)
+            # display title, date of issue, due date and option to notify via email
+            # TODO: Change all populate data from DataVault variables to fn params
+            DataVault.issues = issues
+            DataVault.populateIssues(DataVault, controller)
+        except Exception as e:
+            logger.error("Error in preloadIssues: " + str(e) + traceback.format_exc())
+
+
+    def modifyMembers(self, controller, row):
         pass
 
-    def modifyMembers(self, controller):
+    def deleteMember(self, controller, row):
+        memid = DataVault.viewMemberList[row][0]
+        Member.deleteMember(Member, memid)
+        DataVault.viewMemberList = self.staff.viewMembers()
+        DataVault.populateMembers(DataVault, controller)
         pass
 
 class CreateMember(tk.Frame):
@@ -89,7 +105,10 @@ class CreateMember(tk.Frame):
         self.loginForm()
         submit = tk.Button(self, text="Submit",
                            command=lambda: self.validateStaffAccount(formlabel, controller))
+        back = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("StaffView"))
         submit.grid(sticky=tk.E)
+        back.grid(sticky=tk.E)
 
     def validateStaffAccount(self, formlabel, controller):
         # 3 components: check names for numbers, check email ID for @ and .com
@@ -159,6 +178,7 @@ class CreateMember(tk.Frame):
             data = [None, first, last, dob, phone, email, hash]
             app.Librarian().createMemberAccount(data)
             formlabel['text'] = "Account Created! "
+            self.loginForm()
 
     def loginForm(self):
         a = tk.Label(self, text="First Name")

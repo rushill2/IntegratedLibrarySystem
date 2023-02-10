@@ -19,7 +19,7 @@ sql = {
     'returnDoc': 'DELETE FROM Librarian.Issues WHERE Issue_Id = {_id}',
     'updateMemberIssues': "UPDATE Librarian.Member SET No_of_Borrows = {_borrows}, Books_Borrowed = {_books}",
     'selectMemberIssues': "SELECT No_of_Borrows, Books_Borrowed FROM Librarian.Member WHERE ",
-    'memberlogin': 'SELECT * FROM Librarian.Member WHERE Member_Id = {_id}',
+    'memberlogin': 'SELECT * FROM Librarian.Member WHERE {_login} = {_input} AND Password = {_pass}',
     'getDocDetails': 'SELECT * from Librarian.Documents WHERE Doc_Id = {_id};',
     'getColumns' : 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = "{_table}";',
     'getMemberIssues': 'SELECT * FROM Librarian.Issues where Member_Id = {_memid};',
@@ -27,8 +27,9 @@ sql = {
     'insertStaff': "INSERT INTO Librarian.Staff (Staff_Id, FirstName, LastName, DOB, Phone, Email, Password) VALUES (%s, %s, %s, %s, %s, %s, %s);",
     'memberIssued': "SELECT * FROM Librarian.Issues WHERE Item_Id = {_id} AND Member_Id = {_memid};",
     'loginStaff': "SELECT * FROM Librarian.Staff WHERE {_login} = {_input} AND Password = {_pass};",
-    'viewMembers' : "SELECT * FROM Librarian.Member;",
-    'insertMember': 'INSERT INTO Librarian.Member (Member_Id, first_name, last_name, date_of_birth, Phone, Email, Password) VALUES (%s, %s, %s, %s, %s, %s, %s);'
+    'viewMembers' : "SELECT Member_Id, first_name, last_name, date_of_birth, Books_Borrowed, No_of_Borrows,Phone, Email  FROM Librarian.Member;",
+    'insertMember': 'INSERT INTO Librarian.Member (Member_Id, first_name, last_name, date_of_birth, Phone, Email, Password, No_of_Borrows) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);',
+    'deleteMember': 'DELETE FROM Librarian.Member WHERE Member_Id = {_memid};'
 }
 
 columns = {
