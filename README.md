@@ -23,7 +23,7 @@ Ideal use case is on the Staff side of a Library DBMS
 
 #### 1.3.0:
 - Added 2FA for member account create and login
-
+ - 
 
 
 # Instructions

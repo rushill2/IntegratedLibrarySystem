@@ -1,0 +1,3 @@
+pythontextnow~=1.0.1
+mysql-connector-python~=8.0.31
+PyQt5~=5.15.7

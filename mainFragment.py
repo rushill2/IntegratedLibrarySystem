@@ -3,15 +3,18 @@ import tkinter as tk
 from tkinter import font as tkfont
 from app import App
 from pages.librarian.librarianHome import LibrarianHome
-from pages.librarian.staffView import StaffView, ViewMembers, MemberDetails, TwoFACreate, TwoFALogin
+from pages.librarian.staffActions import StaffActions
+from auth.twoFA import TwoFALogin, TwoFACreate
+from pages.librarian.memberDetails import MemberDetails
+from pages.librarian.viewMembers import ViewMembers
 from pages.member.memberVerification import MemberVerification
 from pages.member.searchBooks import SearchBooks
 from pages.member.searchHome import SearchHome
 from pages.member.searchResults import SearchResults
 from pages.member.booksBorrowed import BookBorrows
-from pages.librarian.librarianHome import LoginLibrarian
-from pages.librarian.librarianHome import CreateLibrarian
-from pages.librarian.staffView import CreateMember
+from pages.librarian.loginLibrarian import LoginLibrarian
+from pages.librarian.createLibrarian import CreateLibrarian
+from pages.librarian.createMember import CreateMember
 
 from pages.startPage import StartPage
 
@@ -46,7 +49,7 @@ class SampleApp(tk.Tk):
 
         self.frames = {}
         for F in (StartPage, LibrarianHome, MemberVerification, SearchHome, SearchBooks, SearchResults, BookBorrows, CreateLibrarian, LoginLibrarian,
-                  StaffView, ViewMembers, CreateMember, MemberDetails, TwoFACreate, TwoFALogin):
+                  StaffActions, ViewMembers, CreateMember, MemberDetails, TwoFACreate, TwoFALogin):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
