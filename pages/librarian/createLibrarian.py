@@ -6,8 +6,10 @@ from datetime import datetime
 
 import app
 from app import App
+from config import smtpConfig
 from data import dumps as d
 from data.dataVault import DataVault
+from util.queryCollection import QueryCollection
 from util.twoFAUtil import TwoFactor
 import logging
 
@@ -80,8 +82,11 @@ class CreateLibrarian(tk.Frame):
             formlabel['text'] = "Names must only contain alphabets"
 
         # check email, must contain @ and .com, and length > 5
-        if any(s == "@" for s in email) and ".com" in email and len(email) > 5:
-            emailbool = True
+        if any(s == "@" for s in email) and any(ext in email for ext in smtpConfig.extensions) and len(email) >= 7:
+            if QueryCollection.checkEmailExists(QueryCollection, email, "Staff"):
+                formlabel['text'] = "Email already in use"
+            else:
+                emailbool = True
         else:
             formlabel['text'] = "Not a valid email"
 
@@ -112,7 +117,7 @@ class CreateLibrarian(tk.Frame):
             app.Librarian().createStaffAccount(data)
             TwoFactor.Phone = phone
             TwoFactor.send_code(TwoFactor)
-            DataVault.twofa_back = "StaffView"
+            DataVault.twofa_back = "StaffActions"
             DataVault.twofa_origin = "CreateLibrarian"
             controller.show_frame("TwoFACreate")
 

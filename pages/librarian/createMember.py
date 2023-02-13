@@ -6,9 +6,11 @@ import traceback
 
 import app
 from app import App
+from config import smtpConfig
 from data import dumps as d
 from data.dataVault import DataVault
 from pages.librarian.staffActions import logger
+from util.queryCollection import QueryCollection
 from util.twoFAUtil import TwoFactor
 
 
@@ -31,8 +33,8 @@ class CreateMember(tk.Frame):
         self.phone = tk.StringVar()
         self.password = tk.StringVar()
         self.retype_pass = tk.StringVar()
-        self.twoFA = tk.IntVar()
-        self.otpval = tk.IntVar()
+        self.twoFA = tk.StringVar()
+        self.otpval = tk.StringVar()
 
         formlabel = tk.Label(self, text="Enter your details: ", font=controller.title_font)
         formlabel.grid(row=0, column=3)
@@ -40,7 +42,7 @@ class CreateMember(tk.Frame):
         submit = tk.Button(self, text="Submit",
                            command=lambda: self.validateStaffAccount(formlabel, controller))
         back = tk.Button(self, text="Back",
-                           command=lambda: controller.show_frame("StaffView"))
+                           command=lambda: controller.show_frame("StaffActions"))
         submit.grid(sticky=tk.E)
         back.grid(sticky=tk.E)
 
@@ -81,8 +83,11 @@ class CreateMember(tk.Frame):
             formlabel['text'] = "Names must only contain alphabets"
 
         # check email, must contain @ and .com, and length > 5
-        if any(s == "@" for s in email) and ".com" in email and len(email) > 5:
-            emailbool = True
+        if any(s == "@" for s in email) and any(ext in email for ext in smtpConfig.extensions) and len(email) >= 7:
+            if QueryCollection.checkEmailExists(QueryCollection, email, "Staff"):
+                formlabel['text'] = "Email already in use"
+            else:
+                emailbool = True
         else:
             formlabel['text'] = "Not a valid email"
 
@@ -114,9 +119,9 @@ class CreateMember(tk.Frame):
             formlabel['text'] = "Account Created! "
             self.loginForm()
             TwoFactor.Phone = phone
-            DataVault.twofa_back = "StaffView"
+            DataVault.twofa_back = "StaffActions"
             DataVault.twofa_origin = "CreateMember"
-            controller.show_frame("TwoFA")
+            controller.show_frame("TwoFACreate")
 
     def loginForm(self):
         a = tk.Label(self, text="First Name")

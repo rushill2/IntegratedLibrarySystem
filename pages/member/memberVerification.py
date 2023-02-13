@@ -65,24 +65,26 @@ class MemberVerification(tk.Frame):
         hash = hashlib.md5(passw.encode("utf-8")).hexdigest()
         values = (login_type, str(entry), str(hash))
         logger.info("Validating Member ID: " + entry + '...')
-        memid, valid = self.app.validateLogin(values)
+        auth_enabled, memid, valid = self.app.validateLogin(values)
         if valid:
             logger.info("Validation Successful! Welcome member " + str(memid))
             # setMember(entry)
             DataVault.mem_id = memid
             DataVault.loggedinID = memid
             DataVault.loggedIn(DataVault, "Member", memid, "SearchHome")
-            DataVault.twofa_origin = "MemberVerification"
-            DataVault.twofa_back = "SearchHome"
-            TwoFactor.send_code(TwoFactor)
-            controller.show_frame('TwoFALogin')
+            if auth_enabled == 1:
+                DataVault.twofa_origin = "MemberVerification"
+                DataVault.twofa_back = "SearchHome"
+                TwoFactor.send_code(TwoFactor)
+                controller.show_frame('TwoFALogin')
+            else:
+                controller.show_frame("SearchHome")
         else:
-            logger.error("Validation Failed. Try again.")
-            self.label['text'] = "Validation Failed.Try again."
+            logger.error("Validation Member login Failed. Try again.")
+            self.label['text'] = "Validation Failed. Try again."
 
     def password_visible(self, passw, showpass):
         MemberVerification.clickCnt += 1
-
         if MemberVerification.clickCnt % 2 == 0:
             showpass.config(text='Show Password')
             passw.config(show="*")

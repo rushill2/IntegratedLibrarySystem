@@ -15,7 +15,7 @@ class StaffActions(tk.Frame):
         self.staff = Librarian()
         self.controller = controller
         dims = self.grid_size()
-        DataVault.pageMap["StaffView"] = self
+        DataVault.pageMap["StaffActions"] = self
 
         self.label = tk.Label(self, text="Welcome! \n Pick your action", font=controller.title_font)
         self.log = None
@@ -34,7 +34,7 @@ class StaffActions(tk.Frame):
         logger.info("SearchHome ready. Took " + str(time.time() - t) + " seconds")
 
     def goToSearch(self, controller):
-        DataVault.bookborrows_prev = "StaffView"
+        DataVault.bookborrows_prev = "StaffActions"
         controller.show_frame("SearchBooks")
 
     def preloadMembers(self, controller):

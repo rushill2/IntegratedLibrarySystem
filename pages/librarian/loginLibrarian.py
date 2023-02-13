@@ -6,6 +6,8 @@ import app
 from data.dataVault import DataVault
 import logging
 
+from util.twoFAUtil import TwoFactor
+
 logger = logging.getLogger()
 
 class LoginLibrarian(tk.Frame):
@@ -65,16 +67,23 @@ class LoginLibrarian(tk.Frame):
         # now compute password hash
         hash = hashlib.md5(passw.get().encode("utf-8")).hexdigest()
         values = (login_type, str(lib_id.get()), str(hash))
-        valid, id = app.Librarian().validateLogin(values)
+        auth_enabled, valid, id = app.Librarian().validateLogin(values)
         DataVault.loggedinID = id
         if valid:
             # successful login, transition to other page
             # next page should have options for view members (and modify once you're in the view) - same with documents
-            DataVault.loggedIn(DataVault, "Librarian", id, "StaffView")
-            controller.show_frame("StaffView")
-
+            DataVault.loggedIn(DataVault, "Librarian", id, "StaffActions")
+            DataVault.loggedinID = id
+            if auth_enabled == 1:
+                DataVault.twofa_origin = "LoginLibrarian"
+                DataVault.twofa_back = "StaffActions"
+                TwoFactor.send_code(TwoFactor)
+                controller.show_frame('TwoFALogin')
+            else:
+                controller.show_frame("StaffActions")
         else:
             # failed login, get fucked
+            logger.error("Validation Staff login Failed. Try again.")
             self.label['text'] = "Invalid login, try again"
 
     def password_visible(self, passw, showpass):

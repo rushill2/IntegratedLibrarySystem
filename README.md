@@ -23,7 +23,12 @@ Ideal use case is on the Staff side of a Library DBMS
 
 #### 1.3.0:
 - Added 2FA for member account create and login
- - 
+- Changed all UI widgets to grid layout, earlier used tk.__widget__.pack()
+
+#### 1.3.1
+- Refactor
+- Check for if email already in use
+- 2FA for Staff login added
 
 
 # Instructions

@@ -7,6 +7,7 @@ from pages.member.memberVerification import MemberVerification
 import logging, mysql.connector
 
 import data.dumps
+from util.twoFAUtil import TwoFactor
 
 mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, autocommit=True)
 mycursor = mydb.cursor(buffered=True)
@@ -184,10 +185,11 @@ class QueryCollection:
             sql = dbcfg.sql['loginStaff'].replace('{_login}', values[0]).replace('{_input}', '"'+ values[1] + '"').replace('{_pass}', '"' + values[2] + '"')
             mycursor.execute(sql)
             rows = mycursor.fetchall()
+            TwoFactor.Phone = rows[0][4]
             if len(rows) == 0:
-                return False, None
+                return None, False, None
             else:
-                return True, rows[0][0]
+                return rows[0][-1], True, rows[0][0]
 
         except Exception as e:
             logger.error("Error in validateLogin for Staff: " + str(e) + traceback.format_exc())
@@ -201,4 +203,19 @@ class QueryCollection:
             mydb.commit()
         except Exception as e:
             logger.error("Error in update 2FA for " + type + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def checkEmailExists(self, email, table):
+        sql = dbcfg.sql['emailExists']
+        values = (table, '"' + email + '"')
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql, values)
+            rows = mycursor.fetchone()
+            if len(rows)>0:
+                return True
+            else:
+                return False
+        except Exception as e:
+            logger.error("Error in checkEmailExists " + str(e) + traceback.format_exc())
             sys.exit(-1)

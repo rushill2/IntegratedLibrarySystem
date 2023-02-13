@@ -22,7 +22,7 @@ class ViewMembers(tk.Frame):
 
         self.controller = controller
 
-        self.back = tk.Button(self, text="Back", command=lambda: controller.show_frame('StaffView'))
+        self.back = tk.Button(self, text="Back", command=lambda: controller.show_frame('StaffActions'))
         self.back.grid(row=2, column=8)
 
     # TODO: Preload the overdues and issues for members

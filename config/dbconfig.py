@@ -29,7 +29,8 @@ sql = {
     'loginStaff': "SELECT * FROM Librarian.Staff WHERE {_login} = {_input} AND Password = {_pass};",
     'viewMembers' : "SELECT Member_Id, first_name, last_name, date_of_birth, Books_Borrowed, No_of_Borrows,Phone, Email  FROM Librarian.Member;",
     'insertMember': 'INSERT INTO Librarian.Member (Member_Id, first_name, last_name, date_of_birth, Phone, Email, Password, No_of_Borrows) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);',
-    'deleteMember': 'DELETE FROM Librarian.Member WHERE Member_Id = {_memid};'
+    'deleteMember': 'DELETE FROM Librarian.Member WHERE Member_Id = {_memid};',
+    'emailExists': 'SELECT * FROM Librarian.%s WHERE Email = %s;'
 }
 
 columns = {

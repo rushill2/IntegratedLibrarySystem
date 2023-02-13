@@ -16,12 +16,12 @@ class TwoFALogin(tk.Frame):
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
         DataVault.memDetails = self
-        self.otpval = tk.IntVar()
+        self.otpval = tk.StringVar()
         DataVault.pageMap["TwoFALogin"] = self
         # TODO: add input validation
         self.formlabel = tk.Label(self, text="Please Enter the OTP sent to your mobile", font=controller.title_font)
         self.formlabel.grid(sticky='ew', columnspan=10)
-        self.otp = tk.IntVar()
+        self.otp = tk.StringVar()
         self.no = tk.Entry(self, textvariable=self.otp)
         self.no.grid(sticky='ew', columnspan=2)
         self.btn = tk.Button(self, text="Verify", command=lambda:self.goToSearchHome(controller))
@@ -50,7 +50,7 @@ class TwoFACreate(tk.Frame):
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
         DataVault.memDetails = self
-        self.otpval = tk.IntVar()
+        self.otpval = tk.StringVar()
         DataVault.pageMap["TwoFACreate"] = self
         # TODO: add input validation
         self.formlabel = tk.Label(self, text="Would you like to set up Two-Factor Authentication?", font=controller.title_font)
