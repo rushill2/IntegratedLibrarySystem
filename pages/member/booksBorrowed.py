@@ -26,6 +26,7 @@ class BookBorrows(tk.Frame):
         self.app = App()
         logger.info("Opening SearchResults...")
         tk.Frame.__init__(self, parent)
+        DataVault.pageMap["BookBorrows"] = self
         self.controller = controller
         logger.info("BookBorrows ready. Took " + str(time.time() - t) + " seconds")
         filters = DataVault.inputvalues
@@ -38,7 +39,7 @@ class BookBorrows(tk.Frame):
 
     def returnBook(self, data, controller, row):
         DataVault.bookborrows_msg.set("Document returned!")
-        DataVault.borrowbuttons[row-1]['state'] = 'active'
+        # DataVault.borrowbuttons[row]['state'] = 'active'
         doc_id = data[1]
         self.member.returnDocument("Books", doc_id, row)
         DataVault.issues = Member(DataVault.mem_id, self.app).getIssuesbyMemId(DataVault.mem_id)

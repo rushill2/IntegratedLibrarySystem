@@ -118,17 +118,19 @@ class QueryCollection:
                 issuenums -= 1
             if not issues:
                 if action == 'borrow':
-                    issues = str(doc_id)
+                    issues = str(doc_id) + ','
             else:
+
                 if action == 'borrow':
-                    if len(issues) == 0:
-                        issues += str(doc_id)
-                    else:
-                        issues += ',' + str(doc_id)
                     if str(doc_id) in issues:
                         return 1
+                    if len(issues) == 0:
+                        issues += str(doc_id) +','
+                    else:
+                        issues += str(doc_id) + ','
+
                 else:
-                    issues.replace(',' + str(doc_id), "")
+                    issues = issues.replace(',' + str(doc_id), "")
 
             sql = dbcfg.sql['update'].replace('{_tbl}', "Member").replace("{_idtype}", "Member_Id").replace("{_id}",                                                                                       str(mem_id))
             sql += "No_of_Borrows = " + str(
@@ -183,10 +185,20 @@ class QueryCollection:
             mycursor.execute(sql)
             rows = mycursor.fetchall()
             if len(rows) == 0:
-                return False
+                return False, None
             else:
-                return True
+                return True, rows[0][0]
 
         except Exception as e:
             logger.error("Error in validateLogin for Staff: " + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def update2FABool(self, id, type):
+        sql = "UPDATE Librarian." + type + ' SET TwoFA = 1 WHERE Member_Id = ' + str(id) + ';'
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            mydb.commit()
+        except Exception as e:
+            logger.error("Error in update 2FA for " + type + str(e) + traceback.format_exc())
             sys.exit(-1)

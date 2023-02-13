@@ -9,6 +9,8 @@ import app
 from app import App
 import logging
 import data.dumps as d
+from data.dataVault import DataVault
+from pages.librarian.staffView import StaffView
 
 logger = logging.getLogger()
 
@@ -21,19 +23,29 @@ class LibrarianHome(tk.Frame):
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="Login or Create Account", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=20, padx=20)
+        self.label = tk.Label(self, text="Login or Create Account", font=controller.title_font)
 
-        login = tk.Button(self, text="Login",
+        DataVault.pageMap["LibrarianHome"] = self
+        self.log = None
+        self.login = tk.Button(self, text="Login",
                           command=lambda: controller.show_frame("LoginLibrarian"))
-        login.pack(pady=5, padx=10)
-        create = tk.Button(self, text="Create",
-                           command=lambda: controller.show_frame("CreateLibrarian"))
-        create.pack(pady=5, padx=10)
-        button = tk.Button(self, text="Home",
+
+        self.create = tk.Button(self, text="Create",
+                           command=lambda: self.preloadLibCreate(controller))
+
+        self.button = tk.Button(self, text="Home",
                            command=lambda: controller.show_frame("StartPage"))
-        button.pack(pady=5, padx=10)
+        self.label.grid(sticky='ew', columnspan=10)
+        self.button.grid(row=2, columnspan=5, pady=5)
+        self.create.grid(row=3, columnspan=5, pady=5)
+        self.login.grid(row=4, columnspan=5, pady=5)
+        self.grid_columnconfigure((0, 4), weight=1)
+
         logger.info("LibrarianHome ready. Took " + str(time.time() - t) + " seconds")
+
+    def preloadLibCreate(self, controller):
+        DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "CreateLibrarian")
+        controller.show_frame("CreateLibrarian")
 
 
 class LoginLibrarian(tk.Frame):
@@ -46,6 +58,8 @@ class LoginLibrarian(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.app = app.App()
         self.app.populate()
+        DataVault.pageMap["LoginLibrarian"] = self
+
         self.controller = controller
         self.label = tk.Label(self, text="Enter your details:", font=controller.title_font)
         self.label.grid(row = 0, column = 3)
@@ -91,15 +105,19 @@ class LoginLibrarian(tk.Frame):
         # now compute password hash
         hash = hashlib.md5(passw.get().encode("utf-8")).hexdigest()
         values = (login_type, str(lib_id.get()), str(hash))
-
-        if app.Librarian().validateLogin(values):
+        valid, id = app.Librarian().validateLogin(values)
+        DataVault.loggedinID = id
+        if valid:
             # successful login, transition to other page
             # next page should have options for view members (and modify once you're in the view) - same with documents
+            DataVault.loggedIn(DataVault, "Librarian", id, "StaffView")
             controller.show_frame("StaffView")
 
         else:
             # failed login, get fucked
             self.label['text'] = "Invalid login, try again"
+
+
 
     def password_visible(self, passw, showpass):
         LoginLibrarian.clickCnt += 1
@@ -127,6 +145,8 @@ class CreateLibrarian(tk.Frame):
         # TODO: add input validation
         self.firstname = tk.StringVar()
         self.dob = tk.StringVar()
+        DataVault.pageMap["CreateLibrarian"] = self
+        self.log = None
         self.lastname = tk.StringVar()
         self.email = tk.StringVar()
         self.phone = tk.StringVar()
@@ -137,6 +157,9 @@ class CreateLibrarian(tk.Frame):
         self.loginForm()
         submit = tk.Button(self, text="Submit",
                            command=lambda: self.validateStaffAccount(formlabel, controller))
+        submit.grid(sticky=tk.E)
+        submit = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("LibrarianHome"))
         submit.grid(sticky=tk.E)
 
     def validateStaffAccount(self, formlabel, controller):

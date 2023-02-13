@@ -1,6 +1,30 @@
 # Integrated Library System
-Integrated Library System with secure login, 2FA (TBA), search, issue, return functions
+Integrated Library System with secure login, 2FA, search, issue, return functions
 Ideal use case is on the Staff side of a Library DBMS
+
+## Version History
+
+#### 1.0.0:
+- Initial Commit, basic search functions working
+
+#### 1.0.1:
+- Added login with email ID and password instead of member id
+
+#### 1.0.2:
+- Stored password as hash, created staff home page
+
+#### 1.1.0:
+- Completed Member side (except for magazines and journals (low priority)
+- Set up input validation for account creation (edge case - empty fields - defaults to date issue)
+
+#### 1.2.0:
+- Fixed state transition issues
+- Added SMTP client for book reminder emails
+
+#### 1.3.0:
+- Added 2FA for member account create and login
+
+
 
 # Instructions
 ### To Run
@@ -14,8 +38,8 @@ Ideal use case is on the Staff side of a Library DBMS
 ### Password Hashing
 Passwords are stored as an MD5 Hash. When logging in, the input's hash is computed and compared to stored hash
 
-### 2FA - In Progress
-- Optional two-factor authentication with phone number verification code and email+password
+### 2FA
+- Optional two-factor authentication with phone number verification code and email+password. For both Members and Staff
 
 ### Password Reset - In Progress
 - Uses 2FA to verify and sends an email using the SMTP server for the email domain name with a code (since it's not a web app can't do a url)
@@ -37,19 +61,22 @@ Able to create members and librarian accounts, lookup book journal or magazine e
 
 #### Module 2: Login
 
-1. Using 2FA (TODO) or email/pass for Staff and members
+1. Using 2FA and email/pass for Staff and members
 
 #### Module 3: Create Member
 
 1. Creates member account with info and member id 
-2. 2FA possible (TODO)
+2. 2FA
+
+#### Module 4: Member Details:
+1. Can view member issues and send email reminders by clicking Notify button
 
 ### Member
 Can look up books, borrow books return books 
 
 #### Module 1: Login
-1. Currently via email + pass with 2FA (In Progress)
-2. Email based verification for reset (In Progress)
+1. Currently via email + pass with 2FA
+2. Email based verification for reset (In Progress) - move to phone 2FA
 
 #### Module 2: Search
 1. TODO - Parametrized queries against SQLi
@@ -64,13 +91,13 @@ Can look up books, borrow books return books
 2. Remove button needed for state transition
 
 ## DataVault
-- Overarching data-store class that allows for pre-computing of values.
+1. Overarching data-store class that allows for pre-computing of values.
 
 
-- Ex: moving from search to search results - search results table populated onclick 'borrow' on search, and reference stored in DataVault
+2. Ex: moving from search to search results - search results table populated onclick 'borrow' on search, and reference stored in DataVault
 
 
-- Each trigger (button or other) to transition to next page calls a function that precomputes values and then loads those retrieved or updated rows into the UI before initializing that fragment
+3. Each trigger (button or other) to transition to next page calls a function that precomputes values and then loads those retrieved or updated rows into the UI before initializing that fragment
 
 ### Functions
 

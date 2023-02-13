@@ -7,6 +7,7 @@ import sys
 import logging
 
 from util.queryCollection import QueryCollection
+from util.twoFAUtil import TwoFactor
 
 logger = logging.getLogger()
 mem_id = None
@@ -71,6 +72,7 @@ class App:
             rows = mycursor.fetchall()
             logger.info("Validation SQL: " + sql)
             logger.info("Found " + str(mycursor.rowcount) + " rows")
+            TwoFactor.Phone = rows[0][6]
             mydb.close()
             if len(rows)>0:
                 return rows[0][0], True
@@ -103,6 +105,7 @@ class Librarian:
     def createMemberAccount(self, data):
         # random 6 digit int as ID
         data[0] = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        TwoFactor.id = data[0]
         data.append(0)
         sql = dbcfg.sql['insertMember']
         try:

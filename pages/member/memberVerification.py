@@ -4,6 +4,8 @@ import tkinter as tk
 
 import logging
 from data.dataVault import DataVault
+from util.twoFAUtil import TwoFactor
+
 logger = logging.getLogger()
 import app
 
@@ -33,6 +35,7 @@ class MemberVerification(tk.Frame):
         passvar = tk.StringVar()
         # textbox
         self.id_entry = tk.Entry(self, textvariable=member_id, font=('calibre', 10, 'normal'))
+        DataVault.pageMap["MemberVerification"] = self
 
         # displaying everything
         self.id_entry.grid(row=2, column=3)
@@ -67,7 +70,12 @@ class MemberVerification(tk.Frame):
             logger.info("Validation Successful! Welcome member " + str(memid))
             # setMember(entry)
             DataVault.mem_id = memid
-            controller.show_frame('SearchHome')
+            DataVault.loggedinID = memid
+            DataVault.loggedIn(DataVault, "Member", memid, "SearchHome")
+            DataVault.twofa_origin = "MemberVerification"
+            DataVault.twofa_back = "SearchHome"
+            TwoFactor.send_code(TwoFactor)
+            controller.show_frame('TwoFALogin')
         else:
             logger.error("Validation Failed. Try again.")
             self.label['text'] = "Validation Failed.Try again."

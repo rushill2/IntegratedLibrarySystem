@@ -22,7 +22,9 @@ class SearchResults(tk.Frame):
         DataVault.searchRes = self
         self.tkutil = KinterUtilities(parent)
         self.app = App()
+        DataVault.pageMap["SearchResults"] = self
         logger.info("Opening SearchResults...")
+        self.log = None
         tk.Frame.__init__(self, parent)
         self.controller = controller
         logger.info("SearchResults ready. Took " + str(time.time() - t) + " seconds")

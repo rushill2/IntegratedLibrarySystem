@@ -1,14 +1,19 @@
 import hashlib
+import sys
 import time
 import tkinter as tk
 import traceback
-from datetime import datetime
+import datetime
 import data.dumps as d
-
 import app
+import util.smtpUtil
+from util.queryCollection import QueryCollection
+from util.twoFAUtil import TwoFactor
 from app import App, Librarian
+from config import smtpConfig
 from data.dataVault import DataVault
 import logging
+from util.smtpUtil import SMTPUtil
 
 from util.memberSQL import Member
 
@@ -22,17 +27,23 @@ class StaffView(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.staff = Librarian()
         self.controller = controller
-        label = tk.Label(self, text="Welcome! \n Pick your action", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10, padx=10)
-        books = tk.Button(self, text="View Documents", command=lambda: self.goToSearch(controller))
-        books.pack(pady=1, padx=10)
-        view_mem = tk.Button(self, text="View Members", command=lambda: self.preloadMembers(controller))
-        view_mem.pack(pady=1, padx=10)
-        create_mem = tk.Button(self, text="Create Member", command=lambda: self.controller.show_frame("CreateMember"))
-        create_mem.pack(pady=1, padx=10)
-        button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
-        button.pack(pady=10, padx=10, side=tk.LEFT)
+        dims = self.grid_size()
+        DataVault.pageMap["StaffView"] = self
+
+        self.label = tk.Label(self, text="Welcome! \n Pick your action", font=controller.title_font)
+        self.log = None
+        self.books = tk.Button(self, text="View Documents", command=lambda: self.goToSearch(controller))
+        self.view_mem = tk.Button(self, text="View Members", command=lambda: self.preloadMembers(controller))
+        self.create_mem = tk.Button(self, text="Create Member", command=lambda: self.preloadCreate(controller))
+        self.button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
         DataVault.bookborrows_prev = "SearchHome"
+        self.label.grid(sticky="ew", columnspan=10)
+        self.books.grid(row=2, columnspan=5, pady=5)
+        self.view_mem.grid(row=4, columnspan=5, pady=5)
+        self.create_mem.grid(row=6, columnspan=5, pady=5)
+        self.button.grid(row=8, columnspan=5, pady=5)
+        self.grid_columnconfigure((0, 4), weight=1)
+
         logger.info("SearchHome ready. Took " + str(time.time() - t) + " seconds")
 
     def goToSearch(self, controller):
@@ -45,6 +56,10 @@ class StaffView(tk.Frame):
         DataVault.populateMembers(DataVault, controller)
         controller.show_frame("ViewMembers")
 
+    def preloadCreate(self, controller):
+        DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "CreateMember")
+        controller.show_frame("CreateMember")
+
 
 class ViewMembers(tk.Frame):
     def __init__(self, parent, controller):
@@ -55,20 +70,34 @@ class ViewMembers(tk.Frame):
         logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
         self.staff = Librarian()
+        DataVault.pageMap["ViewMembers"] = self
+
         self.controller = controller
+
         self.back = tk.Button(self, text="Back", command=lambda: controller.show_frame('StaffView'))
-        self.back.grid(row=0, column=8)
+        self.back.grid(row=2, column=8)
 
     # TODO: Preload the overdues and issues for members
     def preloadIssues(self, controller, row):
         # display member information
         try:
-            member = DataVault.viewMemberList[row][0]
-            issues = self.member.getIssuesbyMemId(member)
+            DataVault.currMem = DataVault.viewMemberList[row]
+            issues = self.member.getIssuesbyMemId(DataVault.currMem[0])
             # display title, date of issue, due date and option to notify via email
             # TODO: Change all populate data from DataVault variables to fn params
             DataVault.issues = issues
-            DataVault.populateIssues(DataVault, controller)
+            for i in range(len(issues)):
+                today = datetime.date.today()
+                if today < issues[i][4]:
+                    issues[i] += ("Overdue",)
+                else:
+                    issues[i] += ("On Time",)
+
+            issues += (("Issue Id", "Document Id", "Title", "Issue Date", "Due Date","Memid", "Status"),)
+            issues.reverse()
+            DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "MemberDetails")
+            DataVault.populateDetails(DataVault, controller, issues)
+            controller.show_frame("MemberDetails")
         except Exception as e:
             logger.error("Error in preloadIssues: " + str(e) + traceback.format_exc())
 
@@ -83,6 +112,46 @@ class ViewMembers(tk.Frame):
         DataVault.populateMembers(DataVault, controller)
         pass
 
+
+class MemberDetails(tk.Frame):
+    def __init__(self, parent, controller):
+        self.placeholder_color = None
+        t = time.time()
+        self.app = App()
+        logger.info("Opening LibrarianHome...")
+        tk.Frame.__init__(self, parent)
+        DataVault.memDetails = self
+        DataVault.pageMap["MemberDetails"] = self
+        # TODO: add input validation
+        self.formlabel = tk.Label(self, text="", font=controller.title_font)
+        self.formlabel.grid(row=0, column=3)
+        self.back = tk.Button(self, text="Back", command=lambda: controller.show_frame('ViewMembers'))
+        self.back.grid(row=0, column=8)
+
+    def sendEmail(self, row, controller, i):
+
+
+        # Open a plain text file for reading.  For this example, assume that
+        # the text file contains only ASCII characters.
+        # Create a text/plain message
+        duedelta = row[4] - datetime.date.today()
+        if duedelta > datetime.timedelta(0):
+            # due in x days
+            ptext = smtpConfig.templates['reminder'].replace('{_title}', row[2]).replace("{_days}", str(duedelta))
+        elif duedelta < datetime.timedelta(0):
+            ptext = smtpConfig.templates['overdue'].replace('{_title}', row[2]).replace("{_days}", str(duedelta))
+        else:
+            ptext = smtpConfig.templates['today'].replace('{_title}', row[2])
+
+        try:
+            SMTPUtil.sendEmailSSL(SMTPUtil, ptext, 'Regarding Your Recent ILS Book Issue', DataVault.currMem[7])
+            self.formlabel['text'] = "Email Sent!"
+        except Exception as e:
+            logger.error("Error in MemberDetails sendEmail: " +str(e) +traceback.format_exc())
+            sys.exit(-1)
+
+
+
 class CreateMember(tk.Frame):
     clickcnt = 0
     # TODO: add passwords and confirm password fields after input validation
@@ -95,11 +164,16 @@ class CreateMember(tk.Frame):
         # TODO: add input validation
         self.firstname = tk.StringVar()
         self.dob = tk.StringVar()
+        DataVault.pageMap["CreateMember"] = self
+        self.log = None
         self.lastname = tk.StringVar()
         self.email = tk.StringVar()
         self.phone = tk.StringVar()
         self.password = tk.StringVar()
         self.retype_pass = tk.StringVar()
+        self.twoFA = tk.IntVar()
+        self.otpval = tk.IntVar()
+
         formlabel = tk.Label(self, text="Enter your details: ", font=controller.title_font)
         formlabel.grid(row=0, column=3)
         self.loginForm()
@@ -165,7 +239,7 @@ class CreateMember(tk.Frame):
         # credit : https://stackoverflow.com/questions/16870663/how-do-i-validate-a-date-string-format-in-python
 
         try:
-            formatted_dob = datetime.strptime(dob, "%Y-%m-%d")
+            formatted_dob = datetime.datetime.strptime(dob, "%Y-%m-%d")
             if dob == formatted_dob.strftime('%Y-%m-%d'):
                 dobbool = True
             else:
@@ -179,6 +253,10 @@ class CreateMember(tk.Frame):
             app.Librarian().createMemberAccount(data)
             formlabel['text'] = "Account Created! "
             self.loginForm()
+            TwoFactor.Phone = phone
+            DataVault.twofa_back = "StaffView"
+            DataVault.twofa_origin = "CreateMember"
+            controller.show_frame("TwoFA")
 
     def loginForm(self):
         a = tk.Label(self, text="First Name")
@@ -195,6 +273,7 @@ class CreateMember(tk.Frame):
         e.grid(row=6, column=2)
         e = tk.Label(self, text="Confirm Password")
         e.grid(row=7, column=2)
+        # e.grid(row=8, column=2)
         a1 = tk.Entry(self, textvariable=self.firstname)
         a1.grid(row=1, column=3)
         b1 = tk.Entry(self, textvariable=self.lastname)
@@ -254,3 +333,88 @@ class CreateMember(tk.Frame):
     def foc_out(self, *args):
         if not self.e1.get():
             self.put_placeholder()
+
+
+class TwoFACreate(tk.Frame):
+    def __init__(self, parent, controller):
+        self.placeholder_color = None
+        t = time.time()
+        self.app = App()
+        logger.info("Opening LibrarianHome...")
+        tk.Frame.__init__(self, parent)
+        DataVault.memDetails = self
+        self.otpval = tk.IntVar()
+        DataVault.pageMap["TwoFACreate"] = self
+        # TODO: add input validation
+        self.formlabel = tk.Label(self, text="Would you like to set up Two-Factor Authentication?", font=controller.title_font)
+        self.formlabel.grid(sticky='ew', columnspan=10)
+        self.yes = tk.Button(self, text="Yes", command=lambda: self.verifyOTP(controller))
+        self.yes.grid(sticky='ew', columnspan=2)
+        self.no = tk.Button(self, text="No", command=lambda: self.noLoader(controller))
+        self.no.grid(sticky='ew', columnspan=2)
+    def noLoader(self, controller):
+        self.formlabel['text'] = "Account Created without 2FA"
+        controller.show_frame(DataVault.twofa_origin)
+    def verifyOTP(self, controller):
+        self.yes.grid_forget()
+        self.no.grid_forget()
+        TwoFactor.send_code(TwoFactor)
+        self.formlabel['text'] = "Enter your OTP"
+        self.otpentry = tk.Entry(self, textvariable=self.otpval)
+        self.otpentry.grid(sticky='ew', columnspan=5)
+        self.verifybtn = tk.Button(self, text='Verify', command=lambda:self.accountCreated2FA(controller))
+        self.verifybtn.grid(sticky='ew', columnspan=5)
+
+    def accountCreated2FA(self, controller):
+        if TwoFactor.authenticate(TwoFactor, self.otpentry.get()):
+            # make 2FA enabled in db
+            QueryCollection.update2FABool(TwoFactor,TwoFactor.id, "Member")
+            self.verifybtn.grid_forget()
+            self.otpentry.grid_forget()
+            self.back = tk.Button(self, text='Back', command=lambda: controller.show_frame(DataVault.twofa_back))
+            self.back.grid(sticky='ew', columnspan=5)
+        else:
+            self.formlabel['text'] = "Incorrect OTP"
+
+
+    # TwoFactor.send_code(TwoFactor, phone)
+    # otp = tk.Label(self, text="Enter Mobile OTP")
+    # val = tk.Entry(self, textvariable=self.otpval)
+    # auth = tk.Button(self, text="Verify", command=lambda: TwoFactor.authenticate(TwoFactor, self.otpval.get()))
+    # otp.grid(row=5, column=5)
+    # val.grid(row=5, column=6)
+    # auth.grid(row=6, column=5)
+
+
+class TwoFALogin(tk.Frame):
+    def __init__(self, parent, controller):
+        self.placeholder_color = None
+        t = time.time()
+        self.app = App()
+        logger.info("Opening LibrarianHome...")
+        tk.Frame.__init__(self, parent)
+        DataVault.memDetails = self
+        self.otpval = tk.IntVar()
+        DataVault.pageMap["TwoFALogin"] = self
+        # TODO: add input validation
+        self.formlabel = tk.Label(self, text="Please Enter the OTP sent to your mobile", font=controller.title_font)
+        self.formlabel.grid(sticky='ew', columnspan=10)
+        self.otp = tk.IntVar()
+        self.no = tk.Entry(self, textvariable=self.otp)
+        self.no.grid(sticky='ew', columnspan=2)
+        self.btn = tk.Button(self, text="Verify", command=lambda:self.goToSearchHome(controller))
+        self.btn.grid(sticky='ew', columnspan=2)
+        self.resend = tk.Button(self, text="Resend", command=lambda: TwoFactor.send_code(TwoFactor))
+        self.resend.grid(sticky='ew', columnspan=2)
+
+    def goToSearchHome(self, controller):
+        if TwoFactor.authenticate(TwoFactor, self.no.get()):
+            # make 2FA enabled in db
+            self.resend.grid_forget()
+            self.btn.grid_forget()
+            self.formlabel['text'] = "Verification Successful!"
+            self.no.grid_forget()
+            self.back = tk.Button(self, text='Proceed', command=lambda: controller.show_frame(DataVault.twofa_back))
+            self.back.grid(sticky='ew', columnspan=5)
+        else:
+            self.formlabel['text'] = "Incorrect OTP, try again"

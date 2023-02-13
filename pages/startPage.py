@@ -3,6 +3,9 @@ import tkinter as tk
 
 from app import App
 import logging
+
+from data.dataVault import DataVault
+
 logger = logging.getLogger()
 
 
@@ -22,9 +25,15 @@ class StartPage(tk.Frame):
         button1 = tk.Button(self, text="Member",
                             command=lambda: controller.show_frame("MemberVerification"))
         button2 = tk.Button(self, text="Librarian",
-                            command=lambda: controller.show_frame("LibrarianHome"))
+                            command=lambda: self.pregridLibHome(controller))
         button1.pack(pady=0, padx=10)
         button2.pack(pady=10, padx=10)
         logger.info("StartPage ready. Took " + str(time.time() - t) + " seconds")
+
+    def pregridLibHome(self, controller):
+        page = DataVault.pageMap['LibrarianHome']
+        dims = page.grid_size()
+
+        controller.show_frame("LibrarianHome")
 
 
