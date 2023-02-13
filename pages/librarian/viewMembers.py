@@ -14,6 +14,7 @@ class ViewMembers(tk.Frame):
         t = time.time()
         DataVault.viewMems = self
         self.app = App()
+        self.log = None
         self.member = Member(DataVault.mem_id, self.app)
         logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
@@ -51,6 +52,7 @@ class ViewMembers(tk.Frame):
 
 
     def modifyMembers(self, controller, row):
+
         pass
 
     def deleteMember(self, controller, row):
