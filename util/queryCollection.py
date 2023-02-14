@@ -1,9 +1,10 @@
 import sys
 import traceback
 from datetime import datetime, timedelta
+from random import randint
+
 from config import dbconfig as dbcfg
 from data.dataVault import DataVault
-from pages.member.memberVerification import MemberVerification
 import logging, mysql.connector
 
 import data.dumps
@@ -231,4 +232,26 @@ class QueryCollection:
             logger.info("updateMemberInfo updated : " + str(mycursor.rowcount) + " rows")
         except Exception as e:
             logger.error("Error in updateMemberInfo " + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def insertBooks(self, formlabel):
+        insertBook = DataVault.pageMap['InsertBook']
+        for i,v in enumerate(insertBook.variables):
+            insertBook.variables[i] = v.get()
+        book_id = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        doc_id = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        insertBook.variables.insert(0, doc_id)
+        insertBook.variables.insert(0, book_id)
+        if any(v is None for v in insertBook.variables):
+            return 0
+        sql = dbcfg.sql['insertBook']
+
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql, insertBook.variables)
+            mydb.commit()
+            mydb.close()
+            return 1
+        except Exception as e:
+            logger.error("Error in insertBook QueryCollection " + str(e) + traceback.format_exc())
             sys.exit(-1)

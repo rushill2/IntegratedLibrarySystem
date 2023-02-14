@@ -16,6 +16,7 @@ class MemberDetails(tk.Frame):
         self.placeholder_color = None
         t = time.time()
         self.app = App()
+        self.log = None
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
         DataVault.memDetails = self

@@ -15,7 +15,6 @@ class TwoFALogin(tk.Frame):
         self.app = App()
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
-        DataVault.memDetails = self
         self.otpval = tk.StringVar()
         DataVault.pageMap["TwoFALogin"] = self
         # TODO: add input validation
@@ -49,7 +48,6 @@ class TwoFACreate(tk.Frame):
         self.app = App()
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
-        DataVault.memDetails = self
         self.otpval = tk.StringVar()
         DataVault.pageMap["TwoFACreate"] = self
         # TODO: add input validation

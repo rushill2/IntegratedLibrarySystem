@@ -30,6 +30,10 @@ Ideal use case is on the Staff side of a Library DBMS
 - Check for if email already in use
 - 2FA for Staff login added
 
+#### 1.3.2
+- Fixed details regression
+- Validation Class added
+
 
 # Instructions
 ### To Run

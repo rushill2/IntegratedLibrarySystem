@@ -110,6 +110,8 @@ class DataVault:
                 DataVault.memberarr[i].grid_forget()
                 DataVault.delarr[i].grid_forget()
 
+        # TODO: FIX modify and details button not hiding on delete
+
         for i in range(len(data)):  # Rows
             DataVault.viewMems.details = tk.Button(viewMems, text="Details", command=lambda i=i: viewMems.preloadIssues(controller, i))
             DataVault.viewMems.modify = tk.Button(viewMems, text="Modify",
@@ -139,34 +141,31 @@ class DataVault:
 
 
     def populateDetails(self, controller, document):
-        # if DataVault.issues is None:
-        #     DataVault.bookborrows_msg.set("No Issues yet!")
-        #     return
-
-        cells = {}
-        # DataVault.issues.append(("Num1", "Num2", "Title", "Date Issued", "Date Due"))
-        # DataVault.issues.reverse()
-
-        # for i in range(len(DataVault.borrowarr)):
-        #     if i < len(DataVault.returnarr):
-        #         DataVault.returnarr[i].grid_forget()
-        #         DataVault.borrowarr[i].grid_forget()
+        memDetails = DataVault.pageMap['MemberDetails']
+        if len(document) > 1:
+            memDetails.formlabel['text'] = "Issues for selected member"
+        else:
+            memDetails.formlabel['text'] = "No Issues for member"
+        for i in range(len(document)):
+            result = []
+            for j in range(len(document[i])):
+                if j <2 or j == 5:
+                    continue
+                else:
+                    result.append(document[i][j])
+            document[i] = result
 
         for i in range(len(document)):
-            DataVault.notify = tk.Button(DataVault.memDetails, text="Remind Member", command=lambda i=i: DataVault.memDetails.sendEmail(DataVault.issues[i], DataVault.BBorrows.controller, i))
-            for j in range(2, len(document[0])):
-                if j == 5:
-                    continue
+            DataVault.notify = tk.Button(memDetails, text="Remind Member", command=lambda i=i: DataVault.memDetails.sendEmail(DataVault.issues[i], DataVault.BBorrows.controller, i))
+            for j in range(len(document[0])):
                 try:
-
-                    b = tk.Entry(DataVault.memDetails,justify=tk.CENTER)
-                    b.grid(row=i+1, column=j+1, sticky='ew')
+                    b = tk.Entry(memDetails,justify=tk.CENTER)
+                    b.grid(row=i+2, column=j)
                     b.insert(tk.END, str(document[i][j]))
-                    cells[(i, j)] = b
                     if DataVault.notify is not None and i > 0:
                         DataVault.notify.grid(row=i+1, column=j + 3)
-                    # DataVault.borrowarr.append(DataVault.retbook)
-                    # DataVault.returnarr.append(b)
                 except Exception as e:
                     logger.error("Error in populateTable: " + str(e) + traceback.format_exc())
                     sys.exit(-1)
+
+        DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "MemberDetails")

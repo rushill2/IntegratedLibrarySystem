@@ -1,4 +1,5 @@
 import datetime
+import sys
 import time
 import tkinter as tk
 import traceback
@@ -7,6 +8,7 @@ from app import App, Librarian
 from config import smtpConfig
 from data.dataVault import DataVault
 from pages.librarian.staffActions import logger
+from util.inputValidation import Validation
 from util.memberSQL import Member
 from util.queryCollection import QueryCollection
 
@@ -46,11 +48,11 @@ class ViewMembers(tk.Frame):
 
             issues += (("Issue Id", "Document Id", "Title", "Issue Date", "Due Date","Memid", "Status"),)
             issues.reverse()
-            DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "MemberDetails")
             DataVault.populateDetails(DataVault, controller, issues)
             controller.show_frame("MemberDetails")
         except Exception as e:
             logger.error("Error in preloadIssues: " + str(e) + traceback.format_exc())
+            sys.exit(-1)
 
 
     def modifyMembers(self, controller, row):
@@ -119,47 +121,9 @@ class ViewMembers(tk.Frame):
         dob = self.dob.get()
         phone = self.phone.get()
         email = self.email.get()
-        dobbool = False
-        namebool = False
-        emailbool = False
-        phonebool = False
-        if firstname.isalpha() and lastname.isalpha():
-            namebool = True
-        else:
-            formlabel['text'] = "Names must only contain alphabets"
-
-        # check email, must contain @ and .com, and length > 5
-        if any(s == "@" for s in email) and any(ext in email for ext in smtpConfig.extensions) and len(email) >= 7:
-            if QueryCollection.checkEmailExists(QueryCollection, email, "Staff"):
-                formlabel['text'] = "Email already in use"
-            else:
-                emailbool = True
-        else:
-            formlabel['text'] = "Not a valid email"
-
-        # check contact num - all nums and length = 10
-        if phone.isnumeric():
-            if len(phone) == 10:
-                phonebool = True
-            else:
-                formlabel['text'] = "Invalid phone number length"
-        else:
-            formlabel['text'] = "Only numbers allowed in Contact"
-
-        # validate dob
-        # credit : https://stackoverflow.com/questions/16870663/how-do-i-validate-a-date-string-format-in-python
-
-        try:
-            formatted_dob = datetime.datetime.strptime(dob, "%Y-%m-%d")
-            if dob == formatted_dob.strftime('%Y-%m-%d'):
-                dobbool = True
-            else:
-                formlabel['text'] = "Date must be in YYYY-MM-DD form"
-        except ValueError as e:
-            formlabel['text'] = "Date must be in YYYY-MM-DD form"
-            logger.error("Error in dob input validation: " + str(e) + traceback.format_exc())
-
-        if phonebool and emailbool and namebool and dobbool:
+        valid_input, hash = Validation.inputValidation(formlabel, email=email, phone=phone,dob=dob)
+        # TODO: Test, input validation function may autoreject
+        if valid_input:
             QueryCollection.updateMemberInfo(QueryCollection)
             # self.fname.grid_forget()
             # self.lname.grid_forget()
@@ -172,5 +136,7 @@ class ViewMembers(tk.Frame):
         memid = DataVault.viewMemberList[row][0]
         Member.deleteMember(Member, memid)
         DataVault.viewMemberList = self.staff.viewMembers()
+        DataVault.deetbtnarr[row].grid_forget()
+        DataVault.modbtnarr[row].grid_forget()
         DataVault.populateMembers(DataVault, controller)
         pass

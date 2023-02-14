@@ -4,7 +4,7 @@ from tkinter import font as tkfont
 from app import App
 from pages.librarian.librarianHome import LibrarianHome
 from pages.librarian.modifyMember import ModifyMember
-from pages.librarian.staffActions import StaffActions
+from pages.librarian.staffActions import StaffActions, InsertBook
 from auth.twoFA import TwoFALogin, TwoFACreate
 from pages.librarian.memberDetails import MemberDetails
 from pages.librarian.viewMembers import ViewMembers
@@ -50,7 +50,7 @@ class SampleApp(tk.Tk):
 
         self.frames = {}
         for F in (StartPage, LibrarianHome, MemberVerification, SearchHome, SearchBooks, SearchResults, BookBorrows, CreateLibrarian, LoginLibrarian,
-                  StaffActions, ViewMembers, CreateMember, MemberDetails, TwoFACreate, TwoFALogin, ModifyMember):
+                  StaffActions, ViewMembers, CreateMember, MemberDetails, TwoFACreate, TwoFALogin, ModifyMember, InsertBook):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame

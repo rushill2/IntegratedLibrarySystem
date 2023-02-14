@@ -9,6 +9,7 @@ from app import App
 from config import smtpConfig
 from data import dumps as d
 from data.dataVault import DataVault
+from util.inputValidation import Validation
 from util.queryCollection import QueryCollection
 from util.twoFAUtil import TwoFactor
 import logging
@@ -50,11 +51,6 @@ class CreateLibrarian(tk.Frame):
         # Check contact number for alpha-special
         # check password for special and nums, need both + length > 8 and store hash
         # TODO: Add support for .edu and other emails
-        dobbool = False
-        passbool = False
-        namebool = False
-        emailbool = False
-        phonebool = False
         password = self.password.get()
         retype_pass = self.retype_pass.get()
         phone = self.phone.get()
@@ -62,63 +58,17 @@ class CreateLibrarian(tk.Frame):
         dob = self.dob.get()
         first = self.firstname.get()
         last = self.lastname.get()
-
-        # first, password
-
         # check 1 , are they equal
-        if password == retype_pass:
-            if any(s in d.specials for s in password) and any(s.isalnum() for s in password):
-                passbool = True
-                hash = hashlib.md5(password.encode("utf-8")).hexdigest()
-            else:
-                formlabel['text'] = "Passwords must be alphanumeric and contain special chatracters"
-        else:
-            formlabel['text'] = "Passwords do not match"
-
-        # check name
-        if first.isalpha() and last.isalpha():
-            namebool = True
-        else:
-            formlabel['text'] = "Names must only contain alphabets"
-
-        # check email, must contain @ and .com, and length > 5
-        if any(s == "@" for s in email) and any(ext in email for ext in smtpConfig.extensions) and len(email) >= 7:
-            if QueryCollection.checkEmailExists(QueryCollection, email, "Staff"):
-                formlabel['text'] = "Email already in use"
-            else:
-                emailbool = True
-        else:
-            formlabel['text'] = "Not a valid email"
-
-        # check contact num - all nums and length = 10
-        if phone.isnumeric():
-            if len(phone) == 10:
-                phonebool = True
-            else:
-                formlabel['text'] = "Invalid phone number length"
-        else:
-            formlabel['text'] = "Only numbers allowed in Contact"
-
-        # validate dob
-        # credit : https://stackoverflow.com/questions/16870663/how-do-i-validate-a-date-string-format-in-python
-
-        try:
-            formatted_dob = datetime.strptime(dob, "%Y-%m-%d")
-            if dob == formatted_dob.strftime('%Y-%m-%d'):
-                dobbool = True
-            else:
-                formlabel['text'] = "Date must be in YYYY-MM-DD form"
-        except ValueError as e:
-            formlabel['text'] = "Date must be in YYYY-MM-DD form"
-            logger.error("Error in dob input validation: " + str(e) + traceback.format_exc())
-
-        if phonebool and emailbool and namebool and passbool and dobbool:
+        valid_input, hash = Validation.inputValidation(formlabel, password=password, email=email, phone=phone,
+                                                       retype_pass=retype_pass, dob=dob, first=first, last=last)
+        if valid_input:
             data = [None, first, last, dob, phone, email, hash]
-            app.Librarian().createStaffAccount(data)
+            app.Librarian().createMemberAccount(data)
+            formlabel['text'] = "Account Created! "
+            self.loginForm()
             TwoFactor.Phone = phone
-            TwoFactor.send_code(TwoFactor)
             DataVault.twofa_back = "StaffActions"
-            DataVault.twofa_origin = "CreateLibrarian"
+            DataVault.twofa_origin = "CreateMember"
             controller.show_frame("TwoFACreate")
 
     def loginForm(self):
