@@ -30,7 +30,8 @@ sql = {
     'viewMembers' : "SELECT Member_Id, first_name, last_name, date_of_birth, Books_Borrowed, No_of_Borrows,Phone, Email  FROM Librarian.Member;",
     'insertMember': 'INSERT INTO Librarian.Member (Member_Id, first_name, last_name, date_of_birth, Phone, Email, Password, No_of_Borrows) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);',
     'deleteMember': 'DELETE FROM Librarian.Member WHERE Member_Id = {_memid};',
-    'emailExists': 'SELECT * FROM Librarian.%s WHERE Email = %s;'
+    'emailExists': 'SELECT * FROM Librarian.{_table} WHERE Email = {_email};',
+    'updateMember': "UPDATE Librarian.Member SET first_name = %s, last_name = %s, date_of_birth = %s, Phone = %s, Email = %s WHERE Member_Id = %s;"
 }
 
 columns = {

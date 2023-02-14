@@ -103,6 +103,7 @@ class DataVault:
 
     def populateMembers(self, controller):
         data = DataVault.viewMemberList
+        viewMems = DataVault.pageMap['ViewMembers']
         # deletes the deleted value (refreshes the table each time fn is called)
         for i in range(len(DataVault.delarr)):
             if i < len(DataVault.memberarr):
@@ -110,21 +111,21 @@ class DataVault:
                 DataVault.delarr[i].grid_forget()
 
         for i in range(len(data)):  # Rows
-            DataVault.viewMems.details = tk.Button(DataVault.viewMems, text="Details", command=lambda i=i: DataVault.viewMems.preloadIssues(controller, i))
-            DataVault.viewMems.modify = tk.Button(DataVault.viewMems, text="Modify",
-                                                   command=lambda i=i: DataVault.viewMems.modifyMembers(controller,i))
-            DataVault.viewMems.delete = tk.Button(DataVault.viewMems, text="Delete",
-                                                  command=lambda i=i: DataVault.viewMems.deleteMember(controller, i))
+            DataVault.viewMems.details = tk.Button(viewMems, text="Details", command=lambda i=i: viewMems.preloadIssues(controller, i))
+            DataVault.viewMems.modify = tk.Button(viewMems, text="Modify",
+                                                   command=lambda i=i: viewMems.modifyMembers(controller,i))
+            DataVault.viewMems.delete = tk.Button(viewMems, text="Delete",
+                                                  command=lambda i=i: viewMems.deleteMember(controller, i))
             for j in range(len(data[0])):  # Columns
                 try:
-                    b = tk.Entry(DataVault.viewMems, justify=tk.CENTER)
+                    b = tk.Entry(viewMems, justify=tk.CENTER)
                     b.grid(row=i+2, column=j)
                     b.insert(tk.END, str(data[i][j]))
                     if i > 0:
                         DataVault.memberarr.append(b)
-                        DataVault.deetbtnarr.append(DataVault.viewMems.details)
-                        DataVault.modbtnarr.append(DataVault.viewMems.modify)
-                        DataVault.delarr.append(DataVault.viewMems.delete)
+                        DataVault.deetbtnarr.append(viewMems.details)
+                        DataVault.modbtnarr.append(viewMems.modify)
+                        DataVault.delarr.append(viewMems.delete)
                         DataVault.viewMems.details.grid(row=i+2, column=len(data[1]) + 1)
                         DataVault.viewMems.modify.grid(row=i+2, column=len(data[1]) + 2)
                         DataVault.viewMems.delete.grid(row=i+2, column=len(data[1]) + 3)

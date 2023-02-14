@@ -185,10 +185,10 @@ class QueryCollection:
             sql = dbcfg.sql['loginStaff'].replace('{_login}', values[0]).replace('{_input}', '"'+ values[1] + '"').replace('{_pass}', '"' + values[2] + '"')
             mycursor.execute(sql)
             rows = mycursor.fetchall()
-            TwoFactor.Phone = rows[0][4]
             if len(rows) == 0:
                 return None, False, None
             else:
+                TwoFactor.Phone = rows[0][4]
                 return rows[0][-1], True, rows[0][0]
 
         except Exception as e:
@@ -206,16 +206,29 @@ class QueryCollection:
             sys.exit(-1)
 
     def checkEmailExists(self, email, table):
-        sql = dbcfg.sql['emailExists']
-        values = (table, '"' + email + '"')
+        sql = dbcfg.sql['emailExists'].replace('{_table}', table).replace('{_email}', '"' + email + '"')
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
-            mycursor.execute(sql, values)
+            mycursor.execute(sql)
             rows = mycursor.fetchone()
-            if len(rows)>0:
+            if rows:
                 return True
             else:
                 return False
         except Exception as e:
             logger.error("Error in checkEmailExists " + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def updateMemberInfo(self):
+        sql = dbcfg.sql['updateMember']
+        viewMems = DataVault.pageMap['ViewMembers']
+        values = (viewMems.firstname.get(), viewMems.lastname.get(), viewMems.dob.get(), viewMems.phone.get(), viewMems.email.get(), viewMems.memberid)
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql, values)
+            mydb.commit()
+            mydb.close()
+            logger.info("updateMemberInfo updated : " + str(mycursor.rowcount) + " rows")
+        except Exception as e:
+            logger.error("Error in updateMemberInfo " + str(e) + traceback.format_exc())
             sys.exit(-1)
