@@ -20,8 +20,16 @@ class MemberVerification(tk.Frame):
         self.app = app.App()
         self.app.populate()
         self.controller = controller
+        DataVault.pageMap["MemberVerification"] = self
 
         # description text
+        self.memberlogin(controller)
+        logger.info("MemberVerification ready. Took " + str(time.time() - t) + " seconds")
+
+        #  value getter for member id that validates with db
+    def memberlogin(self, controller):
+        self.log = None
+        self.logoutbtn = None
         self.label = tk.Label(self, text="Enter your Member ID", font=controller.title_font)
         self.label.grid(row=1, column=2)
         self.idlabel = tk.Label(self, text="Phone/Email", font=controller.title_font)
@@ -36,7 +44,6 @@ class MemberVerification(tk.Frame):
         passvar = tk.StringVar()
         # textbox
         self.id_entry = tk.Entry(self, textvariable=member_id, font=('calibre', 10, 'normal'))
-        DataVault.pageMap["MemberVerification"] = self
 
         # displaying everything
         self.id_entry.grid(row=2, column=3)
@@ -50,9 +57,6 @@ class MemberVerification(tk.Frame):
         self.passlabel.grid(row=3, column=2)
         submit.grid(row=6, column=0)
         home.grid(row=6, column=5)
-        logger.info("MemberVerification ready. Took " + str(time.time() - t) + " seconds")
-
-        #  value getter for member id that validates with db
 
     def get_member_id(self, controller):
         entry = self.id_entry.get()
@@ -73,8 +77,8 @@ class MemberVerification(tk.Frame):
             # setMember(entry)
             DataVault.mem_id = memid
             DataVault.loggedinID = memid
-            DataVault.type = "Librarian"
-            LoginManager.loginManager(LoginManager, DataVault.pageMap, "Member", memid, "SearchHome", controller)
+            DataVault.type = "Member"
+            LoginManager.loginManager(LoginManager, DataVault.pageMap, DataVault.type, memid, "SearchHome", controller)
             if auth_enabled == 1:
                 DataVault.twofa_origin = "MemberVerification"
                 DataVault.twofa_back = "SearchHome"

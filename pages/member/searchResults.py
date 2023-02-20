@@ -65,7 +65,7 @@ class SearchResults(tk.Frame):
             PrecomputeTables.populateIssues(PrecomputeTables,controller)
             DataVault.borrowbuttons[row - 1]['state'] = 'disabled'
             DataVault.bookborrows_msg.set("Book borrowed! \n" + DataVault.bookborrows_msg.get())
-            DataVault.bookborrows_prev = "SearchHome"
+            DataVault.bookborrows_prev = "SearchResults"
             DataVault.borrowbuttons[row - 1]['state'] = 'disabled'
             controller.show_frame("BookBorrows")
 

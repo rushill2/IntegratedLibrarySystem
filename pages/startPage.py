@@ -18,13 +18,15 @@ class StartPage(tk.Frame):
         t = time.time()
         DataVault.pageMap["StartPage"] = self
         logger.info("Opening StartPage...")
+        self.log = None
+        self.logoutbtn = None
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.label = tk.Label(self, text="Are you a member or librarian?", font=controller.title_font)
         self.label.pack(side="top", fill="x", pady=20, padx=20)
 
         button1 = tk.Button(self, text="Member",
-                            command=lambda: controller.show_frame("MemberVerification"))
+                            command=lambda: self.pregridMemHome(controller))
         button2 = tk.Button(self, text="Librarian",
                             command=lambda: self.pregridLibHome(controller))
         button1.pack(pady=0, padx=10)
@@ -37,4 +39,7 @@ class StartPage(tk.Frame):
 
         controller.show_frame("LibrarianHome")
 
+    def pregridMemHome(self, controller):
+        DataVault.pageMap['MemberVerification'].memberlogin(controller)
+        controller.show_frame("MemberVerification")
 

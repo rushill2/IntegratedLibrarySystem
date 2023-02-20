@@ -27,8 +27,6 @@ class SearchHome(tk.Frame):
         label.grid(columnspan=10, sticky='ew')
         books = tk.Button(self, text="Books", command=lambda: self.preloadSearch(controller))
         books.grid(columnspan=5)
-        button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
-        button.grid(columnspan=5)
         DataVault.bookborrows_prev = "SearchHome"
         issuebtn = tk.Button(self, text="View Issues", command=lambda: self.preloadIssues(controller))
         issuebtn.grid(columnspan=5)
@@ -48,9 +46,7 @@ class SearchHome(tk.Frame):
 
     def preloadSearch(self, controller):
         page = DataVault.pageMap['SearchBooks']
-        LoginManager.loginManager(LoginManager,DataVault.pageMap, "Member", DataVault.loggedinID, "SearchBooks",controller)
+        LoginManager.loginManager(LoginManager,DataVault.pageMap, DataVault.type, DataVault.loggedinID, "SearchBooks",controller)
         page.inputvalues = {}
-        DataVault.type = "Member"
-        DataVault.bookborrows_prev = "SearchHome"
         page.label['text'] = "Set filters and search:"
         controller.show_frame("SearchBooks")

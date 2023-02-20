@@ -18,7 +18,7 @@ class StaffActions(tk.Frame):
     def __init__(self, parent, controller):
         t = time.time()
         self.app = App()
-        logger.info("Opening SearchHome...")
+        logger.info("Opening StaffActions...")
         tk.Frame.__init__(self, parent)
         self.staff = Librarian()
         self.controller = controller

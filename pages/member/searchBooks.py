@@ -60,7 +60,10 @@ class SearchBooks(tk.Frame):
         self.grid_columnconfigure((0, 4), weight=1)
 
     def goBack(self, controller):
-        controller.show_frame(DataVault.bookborrows_prev)
+        if DataVault.type == "Member":
+            controller.show_frame("SearchHome")
+        else:
+            controller.show_frame("StaffActions")
     def clearFilters(self):
         self.inputvalues = {}
         DataVault.inputvalues = {}
@@ -76,7 +79,11 @@ class SearchBooks(tk.Frame):
             self.label['text'] = "Set filters and search:"
 
     def preloadResults(self, controller):
-        DataVault.bookborrows_prev = "SearchHome"
+        if DataVault.type == "Member":
+            DataVault.bookborrows_prev = "SearchHome"
+        else:
+            DataVault.bookborrows_prev = 'StaffActions'
+
         if len(DataVault.inputvalues) == 0:
             DataVault.pageMap['SearchResults'].label['text'] = "No filters set. All books shown."
             document = QueryCollection.allBooks(QueryCollection)

@@ -67,7 +67,7 @@ Passwords are stored as an SHA256 Hash. When logging in, the input's hash is com
 Mainly to prevent injections. Input validation as well in order to prevent any mischief
 
 ### Server Password Protection
-Password is stored in a compiled file that is encrypted using RSA keys.
+Password is stored in a compiled file that is encrypted using AES-128. Password is decrypted on 
 # Specifications
 
 ## User Types

@@ -2,7 +2,6 @@ import sys
 import traceback
 from datetime import datetime, timedelta
 from random import randint
-import sshtunnel
 from config import dbconfig as dbcfg
 from data.dataVault import DataVault
 import logging, mysql.connector
@@ -286,7 +285,7 @@ class QueryCollection:
 
     def issueData(self, doc_id):
         copies = self.getDocCount(QueryCollection, doc_id)
-        sql = "SELECT Member_Id from Librarian.Documents WHERE Doc_Id =" + str(doc_id) + ';'
+        sql = "SELECT Member_Id from Librarian.Issues WHERE Item_Id =" + str(doc_id) + ';'
 
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)

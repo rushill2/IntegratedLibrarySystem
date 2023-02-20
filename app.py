@@ -17,7 +17,6 @@ class App:
     def __init__(self):
         self.mydb = None
         self.mycursor = None
-        self.password = data.dumps.password
         self.member_id = None
 
     def setMemberId(self, id):
