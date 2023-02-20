@@ -1,8 +1,7 @@
 import sys
-import tkinter
 import traceback
 
-from data.dataVault import DataVault, logger
+from util.dataVault import DataVault, logger
 import tkinter as tk
 
 from util.stateUtil import LoginManager

@@ -1,7 +1,7 @@
 import traceback
 from random import randint
 
-import data.dumps
+import security.dumps
 from config import dbconfig as dbcfg
 import sys
 import logging
@@ -51,7 +51,7 @@ class App:
     def createTables(self):
         # if table does not exist, create it
         creates = dbcfg.createtable
-        tables = data.dumps.tables
+        tables = security.dumps.tables
         for k, v in creates.items():
             try:
                 mydb, mycursor = QueryCollection.connectDB(QueryCollection)

@@ -1,15 +1,14 @@
 import time
 import tkinter as tk
 
-import data.dumps
-from data.dataVault import DataVault
+import security.dumps
+from util.dataVault import DataVault
 import app
 import logging
 
 from util.memberSQL import Member
 from util.precomputeTables import PrecomputeTables
 from util.queryCollection import QueryCollection
-from util.stateUtil import LoginManager
 
 logger = logging.getLogger()
 
@@ -39,8 +38,8 @@ class SearchBooks(tk.Frame):
         self.filter_entry.grid(row=3, columnspan=5)
         # options menu
         self.opts = tk.StringVar(self)
-        self.opts.set(data.dumps.filters[0])
-        options = tk.OptionMenu(self, self.opts, *data.dumps.filters)
+        self.opts.set(security.dumps.filters[0])
+        options = tk.OptionMenu(self, self.opts, *security.dumps.filters)
         options.grid(row=4, columnspan=5)
         logger.info("SearchBooks ready. Took " + str(time.time() - t) + " seconds")
 

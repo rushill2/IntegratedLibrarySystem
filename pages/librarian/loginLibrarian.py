@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 
 import app
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 import logging
 
 from util.stateUtil import LoginManager

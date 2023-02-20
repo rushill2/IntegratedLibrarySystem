@@ -6,7 +6,7 @@ import traceback
 
 from app import App
 from config import smtpConfig
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from pages.librarian.staffActions import logger
 from util.smtpUtil import SMTPUtil
 

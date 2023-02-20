@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 
 import logging
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from util.stateUtil import LoginManager
 from util.twoFAUtil import TwoFactor
 

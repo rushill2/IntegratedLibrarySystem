@@ -1,4 +1,3 @@
-from data.dataVault import DataVault
 from config import smtpConfig
 import smtplib
 from email.mime.text import MIMEText

@@ -1,15 +1,10 @@
-import sys
 import time
 import tkinter as tk
-import traceback
 
 from app import App
-from pages.member.booksBorrowed import BookBorrows
 from util import memberSQL
-from pages.member.memberVerification import MemberVerification
-from pages.member.searchBooks import SearchBooks
 import logging
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from util.memberSQL import Member
 from util.precomputeTables import PrecomputeTables
 

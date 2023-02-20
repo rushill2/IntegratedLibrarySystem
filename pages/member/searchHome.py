@@ -4,8 +4,7 @@ import tkinter as tk
 import app
 import logging
 
-from data.dataVault import DataVault
-from pages.member.booksBorrowed import BookBorrows
+from util.dataVault import DataVault
 from util.memberSQL import Member
 from util.precomputeTables import PrecomputeTables
 from util.stateUtil import LoginManager

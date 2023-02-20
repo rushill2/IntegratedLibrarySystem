@@ -1,5 +1,5 @@
 import tkinter as tk
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 
 
 class LoginManager:

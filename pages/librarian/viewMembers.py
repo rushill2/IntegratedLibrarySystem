@@ -5,8 +5,7 @@ import tkinter as tk
 import traceback
 
 from app import App, Librarian
-from config import smtpConfig
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from pages.librarian.staffActions import logger
 from util.inputValidation import Validation
 from util.memberSQL import Member
@@ -39,7 +38,7 @@ class ViewMembers(tk.Frame):
             DataVault.currMem = DataVault.viewMemberList[row-1]
             issues = self.member.getIssuesbyMemId(DataVault.currMem[0])
             # display title, date of issue, due date and option to notify via email
-            # TODO: Change all populate data from DataVault variables to fn params
+            # TODO: Change all populate security from DataVault variables to fn params
             DataVault.issues = issues
             if not issues or len(issues)==0:
                 DataVault.pageMap['MemberDetails'].formlabel['text'] = "No Books issued!"

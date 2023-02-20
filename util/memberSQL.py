@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime
 
 from config import dbconfig as dbcfg
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from util.queryCollection import QueryCollection
 import logging
 

@@ -3,14 +3,13 @@ import traceback
 from datetime import datetime, timedelta
 from random import randint
 from config import dbconfig as dbcfg
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 import logging, mysql.connector
 
-import data.dumps
 from util.twoFAUtil import TwoFactor
-from data.dataSecurity import AESPasswEncryption
+from security.dataSecurity import AESPasswEncryption
 
-# mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, autocommit=True)
+# mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=security.dumps.password, autocommit=True)
 # mycursor = mydb.cursor(buffered=True)
 logger = logging.getLogger()
 

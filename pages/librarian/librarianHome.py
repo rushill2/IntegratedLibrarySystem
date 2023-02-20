@@ -3,7 +3,7 @@ import tkinter as tk
 
 from app import App
 import logging
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from util.stateUtil import LoginManager
 
 logger = logging.getLogger()

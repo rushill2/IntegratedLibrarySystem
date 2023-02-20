@@ -1,16 +1,10 @@
-import hashlib
 import time
 import tkinter as tk
-import traceback
-from datetime import datetime
 
 import app
 from app import App
-from config import smtpConfig
-from data import dumps as d
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 from util.inputValidation import Validation
-from util.queryCollection import QueryCollection
 from util.twoFAUtil import TwoFactor
 import logging
 

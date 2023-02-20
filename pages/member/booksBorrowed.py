@@ -1,13 +1,8 @@
-import sys
-import threading
 import time
 import tkinter as tk
-import traceback
 
 from app import App
-from data.dataVault import DataVault
-from pages.member.memberVerification import MemberVerification
-from pages.member.searchBooks import SearchBooks
+from util.dataVault import DataVault
 import logging
 from util.memberSQL import Member
 from util.precomputeTables import PrecomputeTables

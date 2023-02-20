@@ -4,10 +4,8 @@ import logging
 import traceback
 
 from config import smtpConfig
-from data.dataVault import DataVault
 from util.queryCollection import QueryCollection
-from util.twoFAUtil import TwoFactor
-from data import dumps as d
+from security import dumps as d
 
 logger = logging.getLogger()
 

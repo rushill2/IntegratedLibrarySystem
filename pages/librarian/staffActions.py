@@ -4,7 +4,7 @@ import tkinter as tk
 import traceback
 
 from app import App, Librarian
-from data.dataVault import DataVault
+from util.dataVault import DataVault
 import logging
 
 from util.inputValidation import Validation
