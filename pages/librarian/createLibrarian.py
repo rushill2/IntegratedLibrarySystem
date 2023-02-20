@@ -59,7 +59,7 @@ class CreateLibrarian(tk.Frame):
         first = self.firstname.get()
         last = self.lastname.get()
         # check 1 , are they equal
-        valid_input, hash = Validation.inputValidation(formlabel, password=password, email=email, phone=phone,
+        valid_input, hash = Validation.inputValidation(Validation, formlabel, password=password, email=email, phone=phone,
                                                        retype_pass=retype_pass, dob=dob, first=first, last=last)
         if valid_input:
             data = [None, first, last, dob, phone, email, hash]

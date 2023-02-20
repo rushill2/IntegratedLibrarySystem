@@ -29,6 +29,7 @@ class CreateMember(tk.Frame):
         self.dob = tk.StringVar()
         DataVault.pageMap["CreateMember"] = self
         self.log = None
+        self.logoutbtn = None
         self.lastname = tk.StringVar()
         self.email = tk.StringVar()
         self.phone = tk.StringVar()
@@ -39,7 +40,7 @@ class CreateMember(tk.Frame):
 
         formlabel = tk.Label(self, text="Enter your details: ", font=controller.title_font)
         formlabel.grid(row=0, column=3)
-        self.loginForm()
+        self.createForm()
         submit = tk.Button(self, text="Submit",
                            command=lambda: self.validateStaffAccount(formlabel, controller))
         back = tk.Button(self, text="Back",
@@ -56,18 +57,18 @@ class CreateMember(tk.Frame):
         first = self.firstname.get()
         last = self.lastname.get()
 
-        valid_input, hash = Validation.inputValidation(formlabel, password=password, email=email, phone=phone, retype_pass=retype_pass, dob=dob, first=first, last=last)
+        valid_input, hash = Validation.inputValidation(Validation, formlabel, password=password, email=email, phone=phone, retype_pass=retype_pass, dob=dob, first=first, last=last)
         if valid_input:
             data = [None, first, last, dob, phone, email, hash]
             app.Librarian().createMemberAccount(data)
             formlabel['text'] = "Account Created! "
-            self.loginForm()
+            self.createForm()
             TwoFactor.Phone = phone
             DataVault.twofa_back = "StaffActions"
             DataVault.twofa_origin = "CreateMember"
             controller.show_frame("TwoFACreate")
 
-    def loginForm(self):
+    def createForm(self):
         a = tk.Label(self, text="First Name")
         a.grid(row=1, column=2)
         b = tk.Label(self, text="Last Name")

@@ -48,17 +48,8 @@ class Member:
             rows = mycursor.fetchall()
             if mycursor.rowcount == 0:
                 return ""
-            names = []
-            i = 0
-            for r in rows:
-                if i == 0:
-                    names.append(dbcfg.columns['Books'])
-                names.append(r)
-                i += 1
-
-            self.setSearchResults(names)
             mydb.close()
-            return names
+            return rows
 
         except Exception as e:
             logger.error("searchDocument Error: " + str(e) + traceback.format_exc())
@@ -90,7 +81,7 @@ class Member:
     def borrowDocument(self, doctype, doc_id, book_id, data, mem_id):
         if QueryCollection.alreadyBorrowed(QueryCollection, doc_id, mem_id) == 1:
             return 1
-        copies = QueryCollection.checkZeroDocs(QueryCollection, doc_id)
+        copies = QueryCollection.getDocCount(QueryCollection, doc_id)
         if copies == 0:
             return 0
         copies -= 1
@@ -104,7 +95,7 @@ class Member:
         QueryCollection.deleteIssues(QueryCollection, doc_id)
 
         # increment copy count in documents
-        copies = QueryCollection.checkZeroDocs(QueryCollection, doc_id)
+        copies = QueryCollection.getDocCount(QueryCollection, doc_id)
         copies += 1
 
         # decrement user's no of issues and remove title from string of borrowed books

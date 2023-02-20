@@ -16,11 +16,12 @@ class StartPage(tk.Frame):
         app.populate()
         logger.info("DB connection successful!")
         t = time.time()
+        DataVault.pageMap["StartPage"] = self
         logger.info("Opening StartPage...")
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="Are you a member or librarian?", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=20, padx=20)
+        self.label = tk.Label(self, text="Are you a member or librarian?", font=controller.title_font)
+        self.label.pack(side="top", fill="x", pady=20, padx=20)
 
         button1 = tk.Button(self, text="Member",
                             command=lambda: controller.show_frame("MemberVerification"))

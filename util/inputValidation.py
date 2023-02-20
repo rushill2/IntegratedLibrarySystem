@@ -17,16 +17,26 @@ class Validation:
     # check password for special and nums, need both + length > 8 and store hash
     # General purpose input validation
     # TODO: CHANGE function to have default values for
-    def inputValidation(formlabel, password=None, first=None, last=None, email=None, phone=None, retype_pass=None, dob=None):
-        dobbool = False
+    def inputValidation(self, formlabel, password=None, first=None, last=None, email=None, phone=None, retype_pass=None, dob=None):
+        passbool, hash = self.passValidation(Validation, password, retype_pass, formlabel)
+        namebool = self.nameValidation(Validation, first, last, formlabel)
+        # check name
+        emailbool = self.emailValidation(Validation, email, formlabel)
+        # check contact num - all nums and length = 10
+        phonebool = self.phoneValidation(Validation, phone, formlabel)
+        # validate dob
+        dobbool = self.dobValidation(Validation, dob, formlabel)
+
+        if password :
+            return phonebool and emailbool and namebool and passbool and dobbool, hash
+        else:
+            return phonebool and emailbool and namebool and passbool and dobbool, None
+
+
+    def passValidation(self, password, retype_pass, formlabel):
         passbool = False
-        namebool = False
-        emailbool = False
-        phonebool = False
-
-
         if password:
-            hash = hashlib.md5(password.encode("utf-8")).hexdigest()
+            hash = hashlib.sha256(password.encode("utf-8")).hexdigest()
             if password == retype_pass:
                 if any(s in d.specials for s in password) and any(s.isalnum() for s in password):
                     passbool = True
@@ -37,7 +47,10 @@ class Validation:
         else:
             passbool = True
 
-        # check name
+        return passbool, hash
+
+    def nameValidation(self, first, last, formlabel):
+        namebool = False
         if first and last:
             if first.isalpha() and last.isalpha():
                 namebool = True
@@ -46,7 +59,11 @@ class Validation:
         else:
             namebool = True
 
+        return namebool
+
+    def emailValidation(self, email, formlabel):
         # check email, must contain @ and .com, and length > 5
+        emailbool = False
         if email:
             if any(s == "@" for s in email) and any(ext in email for ext in smtpConfig.extensions) and len(email) >= 7:
                 if QueryCollection.checkEmailExists(QueryCollection, email, "Staff"):
@@ -58,7 +75,10 @@ class Validation:
         else:
             emailbool = True
 
-        # check contact num - all nums and length = 10
+        return emailbool
+
+    def phoneValidation(self, phone, formlabel):
+        phonebool = False
         if phone:
             if phone.isnumeric():
                 if len(phone) == 10:
@@ -70,8 +90,11 @@ class Validation:
         else:
             phonebool = True
 
-        # validate dob
+        return phonebool
+
+    def dobValidation(self, dob, formlabel):
         # credit : https://stackoverflow.com/questions/16870663/how-do-i-validate-a-date-string-format-in-python
+        dobbool = False
         if dob:
             try:
                 formatted_dob = datetime.datetime.strptime(dob, "%Y-%m-%d")
@@ -84,9 +107,5 @@ class Validation:
                 logger.error("Error in dob input validation: " + str(e) + traceback.format_exc())
         else:
             dobbool = True
-        if password :
-            return phonebool and emailbool and namebool and passbool and dobbool, hash
-        else:
-            return phonebool and emailbool and namebool and passbool and dobbool, None
 
-
+        return dobbool

@@ -34,6 +34,16 @@ Ideal use case is on the Staff side of a Library DBMS
 - Fixed details regression
 - Validation Class added
 
+#### 1.3.3
+- insertBook added with input validation
+
+#### 1.4.0
+- Logged in and out states reflect pages ie no return to login page until log out
+
+#### 1.5.0
+- Fixed buggy state transition. Added SSH tunneling 
+- Password protected via RSA encryption in compiled file. Not visible to user at all
+
 
 # Instructions
 ### To Run
@@ -45,7 +55,7 @@ Ideal use case is on the Staff side of a Library DBMS
 
 # Security Features
 ### Password Hashing
-Passwords are stored as an MD5 Hash. When logging in, the input's hash is computed and compared to stored hash
+Passwords are stored as an SHA256 Hash. When logging in, the input's hash is computed and compared to stored hash
 
 ### 2FA
 - Optional two-factor authentication with phone number verification code and email+password. For both Members and Staff
@@ -56,6 +66,8 @@ Passwords are stored as an MD5 Hash. When logging in, the input's hash is comput
 ### Parametrized SQL
 Mainly to prevent injections. Input validation as well in order to prevent any mischief
 
+### Server Password Protection
+Password is stored in a compiled file that is encrypted using RSA keys.
 # Specifications
 
 ## User Types
@@ -66,7 +78,7 @@ Able to create members and librarian accounts, lookup book journal or magazine e
 
 #### Module 1: Create Account
 
-1. Login Options: Email + Password or set up 2FA. Password stored as MD5 Hash
+1. Login Options: Email + Password or set up 2FA. Password stored as SHA256 Hash
 
 #### Module 2: Login
 

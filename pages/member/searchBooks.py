@@ -3,11 +3,13 @@ import tkinter as tk
 
 import data.dumps
 from data.dataVault import DataVault
-from util.kinterUtilities import KinterUtilities
 import app
 import logging
 
 from util.memberSQL import Member
+from util.precomputeTables import PrecomputeTables
+from util.queryCollection import QueryCollection
+from util.stateUtil import LoginManager
 
 logger = logging.getLogger()
 
@@ -16,11 +18,11 @@ class SearchBooks(tk.Frame):
 
     def __init__(self, parent, controller):
         DataVault.searchBooks = self
-        self.tkutil = KinterUtilities(parent)
         self.controller = controller
         t = time.time()
         self.app = app.App()
         self.log = None
+        self.logoutbtn = None
         logger.info("Opening SearchBooks...")
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -74,7 +76,22 @@ class SearchBooks(tk.Frame):
             self.label['text'] = "Set filters and search:"
 
     def preloadResults(self, controller):
-        DataVault.loggedIn(DataVault, "Member", DataVault.loggedinID, "SearchResults")
-        document = Member(DataVault.mem_id, DataVault.searchRes.app).searchDocument(DataVault.inputvalues, "Books")
-        DataVault.populateResults(DataVault, controller, document)
+        DataVault.bookborrows_prev = "SearchHome"
+        if len(DataVault.inputvalues) == 0:
+            DataVault.pageMap['SearchResults'].label['text'] = "No filters set. All books shown."
+            document = QueryCollection.allBooks(QueryCollection)
+        else:
+            document = Member(DataVault.mem_id, DataVault.searchRes.app).searchDocument(DataVault.inputvalues, "Books")
+
+        # here, loop through the doc ids and get # copies and members
+        document.insert(0, ("Id", "Title", "Edition", "Keywords", "Genre", "Authors", "Publication Date", "Issued By", "#Copies"))
+        for i in range(len(document)):
+            if i == 0:
+                continue
+            issued_by, copies = QueryCollection.issueData(QueryCollection, document[i][0])
+            if issued_by is None:
+                document[i] += (None, copies)
+            else:
+                document[i] += (issued_by[0], copies)
+        PrecomputeTables.populateResults(PrecomputeTables,controller, document)
         controller.show_frame("SearchResults")

@@ -8,7 +8,9 @@ from data.dataVault import DataVault
 import logging
 
 from util.inputValidation import Validation
+from util.precomputeTables import PrecomputeTables
 from util.queryCollection import QueryCollection
+from util.stateUtil import LoginManager
 
 logger = logging.getLogger()
 
@@ -23,24 +25,24 @@ class StaffActions(tk.Frame):
         DataVault.pageMap["StaffActions"] = self
         self.label = tk.Label(self, text="Welcome! \n Pick your action", font=controller.title_font)
         self.log = None
+        self.logoutbtn = None
         self.insertbook = tk.Button(self, text="Insert Book",
                                     command=lambda: self.preloadBookInsert(controller))
         self.books = tk.Button(self, text="View Books", command=lambda: self.goToSearch(controller))
         self.view_mem = tk.Button(self, text="View Members", command=lambda: self.preloadMembers(controller))
         self.create_mem = tk.Button(self, text="Create Member", command=lambda: self.preloadCreate(controller))
-        self.button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
         DataVault.bookborrows_prev = "SearchHome"
         self.label.grid(sticky="ew", columnspan=10)
         self.books.grid(row=2, columnspan=5, pady=5)
         self.view_mem.grid(row=4, columnspan=5, pady=5)
         self.create_mem.grid(row=6, columnspan=5, pady=5)
         self.insertbook.grid(row=8, columnspan=5, pady=5)
-        self.button.grid(row=10, columnspan=5, pady=5)
         self.grid_columnconfigure((0, 4), weight=1)
 
         logger.info("SearchHome ready. Took " + str(time.time() - t) + " seconds")
 
     def goToSearch(self, controller):
+        LoginManager.loginManager(LoginManager, DataVault.pageMap, "Librarian", DataVault.loggedinID, "SearchBooks", controller)
         DataVault.bookborrows_prev = "StaffActions"
         controller.show_frame("SearchBooks")
 
@@ -71,7 +73,7 @@ class StaffActions(tk.Frame):
                     logger.error("Error in populateTable: " + str(e) + traceback.format_exc())
                     sys.exit(-1)
 
-        DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "InsertBook")
+        LoginManager.loginManager(LoginManager,DataVault.pageMap, "Librarian", DataVault.loggedinID, "InsertBook", controller)
         back = tk.Button(insertBook, text="Back",
                                      command=lambda: controller.show_frame('StaffActions'))
         back.grid(row=i + 2, column=j+2)
@@ -80,7 +82,7 @@ class StaffActions(tk.Frame):
 
     def transitionToInsert(self, controller, formlabel):
         insertBook = DataVault.pageMap['InsertBook']
-        Validation.inputValidation(formlabel, dob=insertBook.variables[-1].get())
+        Validation.inputValidation(Validation, formlabel, dob=insertBook.variables[-1].get())
         if type(insertBook.variables[1]) != int:
             formlabel['text'] = 'Edition must be integer'
         else:
@@ -93,11 +95,11 @@ class StaffActions(tk.Frame):
     def preloadMembers(self, controller):
         rows = self.staff.viewMembers()
         DataVault.viewMemberList = rows
-        DataVault.populateMembers(DataVault, controller)
+        PrecomputeTables.populateMembers(PrecomputeTables,controller)
         controller.show_frame("ViewMembers")
 
     def preloadCreate(self, controller):
-        DataVault.loggedIn(DataVault, "Librarian", DataVault.loggedinID, "CreateMember")
+        LoginManager.loginManager(LoginManager,DataVault.pageMap, "Librarian", DataVault.loggedinID, "CreateMember", controller)
         controller.show_frame("CreateMember")
 
 class InsertBook(tk.Frame):

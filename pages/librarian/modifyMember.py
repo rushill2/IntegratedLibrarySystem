@@ -7,6 +7,7 @@ from app import App, Librarian
 from data.dataVault import DataVault
 from pages.librarian.staffActions import logger
 from util.memberSQL import Member
+from util.precomputeTables import PrecomputeTables
 
 
 class ModifyMember(tk.Frame):
@@ -14,6 +15,7 @@ class ModifyMember(tk.Frame):
         t = time.time()
         self.app = App()
         self.log = None
+        self.logoutbtn = None
         self.member = Member(DataVault.mem_id, self.app)
         logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
@@ -27,5 +29,5 @@ class ModifyMember(tk.Frame):
     def reloadMembers(self, controller):
         rows = self.staff.viewMembers()
         DataVault.viewMemberList = rows
-        DataVault.populateMembers(DataVault, controller)
+        PrecomputeTables.populateMembers(PrecomputeTables,controller)
         controller.show_frame('ViewMembers')

@@ -7,6 +7,8 @@ import logging
 from data.dataVault import DataVault
 from pages.member.booksBorrowed import BookBorrows
 from util.memberSQL import Member
+from util.precomputeTables import PrecomputeTables
+from util.stateUtil import LoginManager
 
 logger = logging.getLogger()
 
@@ -20,15 +22,11 @@ class SearchHome(tk.Frame):
         self.controller = controller
         DataVault.pageMap["SearchHome"] = self
         self.log = None
+        self.logoutbtn = None
         label = tk.Label(self, text="Welcome! \n Pick the type of document", font=controller.title_font)
-        dims = self.grid_size()
         label.grid(columnspan=10, sticky='ew')
-        books = tk.Button(self, text="Books", command=lambda: controller.show_frame("SearchBooks"))
+        books = tk.Button(self, text="Books", command=lambda: self.preloadSearch(controller))
         books.grid(columnspan=5)
-        journals = tk.Button(self, text="Journals", command=lambda: controller.show_frame("StartPage"))
-        journals.grid(columnspan=5)
-        mags = tk.Button(self, text="Magazines", command=lambda: controller.show_frame("StartPage"))
-        mags.grid(columnspan=5)
         button = tk.Button(self, text="Home", command=lambda: controller.show_frame("StartPage"))
         button.grid(columnspan=5)
         DataVault.bookborrows_prev = "SearchHome"
@@ -39,6 +37,20 @@ class SearchHome(tk.Frame):
 
     def preloadIssues(self, controller):
         DataVault.issues = Member(DataVault.mem_id, self.app).getIssuesbyMemId(DataVault.mem_id)
-        DataVault.populateIssues(DataVault, controller)
-        DataVault.loggedIn(DataVault, "Member", DataVault.mem_id, "SearchBooks")
+        if len(DataVault.issues) > 0:
+            DataVault.pageMap['BookBorrows'].label['text'] = "Here are your borrows:"
+        else:
+            DataVault.pageMap['BookBorrows'].label['text'] = "Nothing issued yet!"
+
+        PrecomputeTables.populateIssues(PrecomputeTables,controller)
+        LoginManager.loginManager(LoginManager,DataVault.pageMap, "Member", DataVault.mem_id, "SearchBooks", controller)
         controller.show_frame("BookBorrows")
+
+    def preloadSearch(self, controller):
+        page = DataVault.pageMap['SearchBooks']
+        LoginManager.loginManager(LoginManager,DataVault.pageMap, "Member", DataVault.loggedinID, "SearchBooks",controller)
+        page.inputvalues = {}
+        DataVault.type = "Member"
+        DataVault.bookborrows_prev = "SearchHome"
+        page.label['text'] = "Set filters and search:"
+        controller.show_frame("SearchBooks")

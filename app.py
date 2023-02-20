@@ -80,7 +80,7 @@ class App:
                 return None, None, False
         except Exception as e:
             logger.error("Validate Error" + str(e) + traceback.format_exc())
-            return None, False
+            return None, None, False
 
 class Librarian:
     def __init__(self):

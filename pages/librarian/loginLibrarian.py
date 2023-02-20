@@ -6,6 +6,7 @@ import app
 from data.dataVault import DataVault
 import logging
 
+from util.stateUtil import LoginManager
 from util.twoFAUtil import TwoFactor
 
 logger = logging.getLogger()
@@ -21,7 +22,7 @@ class LoginLibrarian(tk.Frame):
         self.app = app.App()
         self.app.populate()
         DataVault.pageMap["LoginLibrarian"] = self
-
+        self.logoutbtn = None
         self.controller = controller
         self.label = tk.Label(self, text="Enter your details:", font=controller.title_font)
         self.label.grid(row = 0, column = 3)
@@ -51,6 +52,7 @@ class LoginLibrarian(tk.Frame):
         submit.grid(row=4, column=2)
         showpass.grid(row=3, column=4, ipadx=5)
         home.grid(row=4, column=3)
+        self.grid_columnconfigure((0, 4), weight=1)
         logger.info("LoginLibrarian ready. Took " + str(time.time() - t) + " seconds")
 
     def login(self, controller, lib_id, passw):
@@ -65,15 +67,17 @@ class LoginLibrarian(tk.Frame):
             login_type = "Email"
 
         # now compute password hash
-        hash = hashlib.md5(passw.get().encode("utf-8")).hexdigest()
+        hash = hashlib.sha256(passw.get().encode("utf-8")).hexdigest()
         values = (login_type, str(lib_id.get()), str(hash))
         auth_enabled, valid, id = app.Librarian().validateLogin(values)
         DataVault.loggedinID = id
         if valid:
+            DataVault.globallog = True
             # successful login, transition to other page
             # next page should have options for view members (and modify once you're in the view) - same with documents
-            DataVault.loggedIn(DataVault, "Librarian", id, "StaffActions")
+            LoginManager.loginManager(LoginManager, DataVault.pageMap, "Librarian", id, "StaffActions", controller)
             DataVault.loggedinID = id
+            DataVault.type = "Librarian"
             if auth_enabled == 1:
                 DataVault.twofa_origin = "LoginLibrarian"
                 DataVault.twofa_back = "StaffActions"

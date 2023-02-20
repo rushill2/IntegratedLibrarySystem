@@ -4,6 +4,7 @@ import tkinter as tk
 
 import logging
 from data.dataVault import DataVault
+from util.stateUtil import LoginManager
 from util.twoFAUtil import TwoFactor
 
 logger = logging.getLogger()
@@ -62,16 +63,18 @@ class MemberVerification(tk.Frame):
             login_type = "Email"
 
         # now compute password hash
-        hash = hashlib.md5(passw.encode("utf-8")).hexdigest()
+        hash = hashlib.sha256(passw.encode("utf-8")).hexdigest()
         values = (login_type, str(entry), str(hash))
         logger.info("Validating Member ID: " + entry + '...')
         auth_enabled, memid, valid = self.app.validateLogin(values)
         if valid:
+            DataVault.globallog = True
             logger.info("Validation Successful! Welcome member " + str(memid))
             # setMember(entry)
             DataVault.mem_id = memid
             DataVault.loggedinID = memid
-            DataVault.loggedIn(DataVault, "Member", memid, "SearchHome")
+            DataVault.type = "Librarian"
+            LoginManager.loginManager(LoginManager, DataVault.pageMap, "Member", memid, "SearchHome", controller)
             if auth_enabled == 1:
                 DataVault.twofa_origin = "MemberVerification"
                 DataVault.twofa_back = "SearchHome"

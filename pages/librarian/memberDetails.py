@@ -17,6 +17,7 @@ class MemberDetails(tk.Frame):
         t = time.time()
         self.app = App()
         self.log = None
+        self.logoutbtn = None
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
         DataVault.memDetails = self
@@ -33,7 +34,7 @@ class MemberDetails(tk.Frame):
         # Open a plain text file for reading.  For this example, assume that
         # the text file contains only ASCII characters.
         # Create a text/plain message
-        duedelta = row[4] - datetime.date.today()
+        duedelta = row[2] - datetime.date.today()
         if duedelta > datetime.timedelta(0):
             # due in x days
             ptext = smtpConfig.templates['reminder'].replace('{_title}', row[2]).replace("{_days}", str(duedelta))

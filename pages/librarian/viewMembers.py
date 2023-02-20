@@ -10,6 +10,7 @@ from data.dataVault import DataVault
 from pages.librarian.staffActions import logger
 from util.inputValidation import Validation
 from util.memberSQL import Member
+from util.precomputeTables import PrecomputeTables
 from util.queryCollection import QueryCollection
 
 
@@ -19,6 +20,7 @@ class ViewMembers(tk.Frame):
         DataVault.viewMems = self
         self.app = App()
         self.log = None
+        self.logoutbtn = None
         self.member = Member(DataVault.mem_id, self.app)
         logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
@@ -34,11 +36,14 @@ class ViewMembers(tk.Frame):
     def preloadIssues(self, controller, row):
         # display member information
         try:
-            DataVault.currMem = DataVault.viewMemberList[row]
+            DataVault.currMem = DataVault.viewMemberList[row-1]
             issues = self.member.getIssuesbyMemId(DataVault.currMem[0])
             # display title, date of issue, due date and option to notify via email
             # TODO: Change all populate data from DataVault variables to fn params
             DataVault.issues = issues
+            if not issues or len(issues)==0:
+                DataVault.pageMap['MemberDetails'].formlabel['text'] = "No Books issued!"
+                return
             for i in range(len(issues)):
                 today = datetime.date.today()
                 if today < issues[i][4]:
@@ -48,7 +53,7 @@ class ViewMembers(tk.Frame):
 
             issues += (("Issue Id", "Document Id", "Title", "Issue Date", "Due Date","Memid", "Status"),)
             issues.reverse()
-            DataVault.populateDetails(DataVault, controller, issues)
+            PrecomputeTables.populateDetails(PrecomputeTables,controller, issues)
             controller.show_frame("MemberDetails")
         except Exception as e:
             logger.error("Error in preloadIssues: " + str(e) + traceback.format_exc())
@@ -62,7 +67,7 @@ class ViewMembers(tk.Frame):
         self.phone = tk.StringVar()
         self.email = tk.StringVar()
         document = []
-        self.memberid = DataVault.viewMemberList[row][0]
+        self.memberid = DataVault.viewMemberList[row-1][0]
 
         # don't want books borrowed field and password
         for i,e in enumerate(DataVault.viewMemberList):
@@ -121,7 +126,7 @@ class ViewMembers(tk.Frame):
         dob = self.dob.get()
         phone = self.phone.get()
         email = self.email.get()
-        valid_input, hash = Validation.inputValidation(formlabel, email=email, phone=phone,dob=dob)
+        valid_input, hash = Validation.inputValidation(Validation, formlabel, email=email, phone=phone,dob=dob)
         # TODO: Test, input validation function may autoreject
         if valid_input:
             QueryCollection.updateMemberInfo(QueryCollection)
@@ -133,10 +138,10 @@ class ViewMembers(tk.Frame):
 
 
     def deleteMember(self, controller, row):
-        memid = DataVault.viewMemberList[row][0]
+        memid = DataVault.viewMemberList[row-1][0]
         Member.deleteMember(Member, memid)
         DataVault.viewMemberList = self.staff.viewMembers()
-        DataVault.deetbtnarr[row].grid_forget()
-        DataVault.modbtnarr[row].grid_forget()
-        DataVault.populateMembers(DataVault, controller)
+        DataVault.deetbtnarr[row-1].grid_forget()
+        DataVault.modbtnarr[row-1].grid_forget()
+        PrecomputeTables.populateMembers(PrecomputeTables,controller)
         pass

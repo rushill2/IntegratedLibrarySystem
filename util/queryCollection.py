@@ -2,16 +2,17 @@ import sys
 import traceback
 from datetime import datetime, timedelta
 from random import randint
-
+import sshtunnel
 from config import dbconfig as dbcfg
 from data.dataVault import DataVault
 import logging, mysql.connector
 
 import data.dumps
 from util.twoFAUtil import TwoFactor
+from data.dataSecurity import AESPasswEncryption
 
-mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, autocommit=True)
-mycursor = mydb.cursor(buffered=True)
+# mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, autocommit=True)
+# mycursor = mydb.cursor(buffered=True)
 logger = logging.getLogger()
 
 
@@ -19,11 +20,21 @@ class QueryCollection:
     # checks if no docs of that id present, else returns count
 
     def connectDB(self):
-        mydb = mysql.connector.connect(host="103.90.163.100", user="root", password=data.dumps.password, )
-        mycursor = mydb.cursor(buffered=True)
-        return mydb, mycursor
+        try:
+            passw = AESPasswEncryption.decrypt(AESPasswEncryption).decode()
+            mydb = mysql.connector.connect(
+                    user='root',
+                    password=passw,
+                    host='103.90.163.100',
+                    port=3306,
+            )
+            mycursor = mydb.cursor(buffered=True)
+            return mydb, mycursor
+        except Exception as e:
+            logger.error("Error in connectDB: " + str(e) + traceback.format_exc())
+            sys.exit(-1)
 
-    def checkZeroDocs(self, doc_id):
+    def getDocCount(self, doc_id):
         sql = dbcfg.sql['getDocDetails'].replace('{_id}', str(doc_id))
         logger.info("borrowDocument getDocDetails SQL: " + sql)
         try:
@@ -33,10 +44,8 @@ class QueryCollection:
                 rows = mycursor.fetchall()
                 mydb.close()
                 if len(rows) > 0:
-                    if rows[0][1] == 0:
-                        return 0
-                    else:
-                        return rows[0][1]
+                    return rows[0][1]
+
             except Exception as e:
                 logger.error("Other error " + str(e) + traceback.format_exc())
                 sys.exit(-1)
@@ -82,7 +91,7 @@ class QueryCollection:
         date = datetime.today() + timedelta(days=14)
         returndate = str(date.strftime('%Y-%m-%d'))
         issuedate = str(datetime.today().strftime('%Y-%m-%d'))
-        sql = dbcfg.sql['insertIssues'].replace('{_ttl}', '"' + choice[2] + '"').replace('{_date}',
+        sql = dbcfg.sql['insertIssues'].replace('{_ttl}', '"' + choice[1] + '"').replace('{_date}',
                                                                                          '"' + issuedate + '"').replace(
             '{_due}', '"' + returndate + '"').replace("{_docid}", str(doc_id)).replace('{_memid}',
                                                                                        str(DataVault.mem_id))
@@ -107,40 +116,45 @@ class QueryCollection:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             mycursor.execute(sql)
             rows = mycursor.fetchall()[0]
-            issuenums = rows[5]
+            numissues = rows[5]
             issues = rows[4]
             mydb.close()
             if action == 'borrow':
-                if issuenums + 1 > 5:
+                if numissues + 1 > 5:
                     return 2
-                issuenums += 1
+                numissues += 1
             else:
-                if issuenums - 1 < 0:
+                if numissues - 1 < 0:
                     return 3
-                issuenums -= 1
+                numissues -= 1
             if not issues:
                 if action == 'borrow':
                     issues = str(doc_id) + ','
+                else:
+                    return 3
             else:
-
                 if action == 'borrow':
-                    if str(doc_id) in issues:
+                    if str(doc_id) in issues.split(','):
                         return 1
                     if len(issues) == 0:
                         issues += str(doc_id) +','
                     else:
                         issues += str(doc_id) + ','
-
                 else:
-                    issues = issues.replace(',' + str(doc_id), "")
+                    if issues[-1] == ',':
+                        issues = issues.replace(str(doc_id) + ',', "")
+                    else:
+                        issues = issues.replace(',' + str(doc_id), "")
 
-            sql = dbcfg.sql['update'].replace('{_tbl}', "Member").replace("{_idtype}", "Member_Id").replace("{_id}",                                                                                       str(mem_id))
-            sql += "No_of_Borrows = " + str(
-                issuenums) + ",  Books_Borrowed = " + '"' + issues + '"' + " WHERE Member_Id = " + str(mem_id) + ';'
+                    if issues == ',':
+                        issues = None
+
+            sql = dbcfg.sql['updateMemberIssues']
+            values = [numissues, issues, str(mem_id)]
             logger.info('updateMembers SQL; ' + sql)
             try:
                 mydb, mycursor = QueryCollection.connectDB(QueryCollection)
-                mycursor.execute(sql)
+                mycursor.execute(sql, values)
                 mydb.commit()
                 logger.info("Updated copies and books borrowed for member id: " + str(mem_id))
                 mydb.close()
@@ -183,6 +197,7 @@ class QueryCollection:
 
     def validateStaff(self, values):
         try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             sql = dbcfg.sql['loginStaff'].replace('{_login}', values[0]).replace('{_input}', '"'+ values[1] + '"').replace('{_pass}', '"' + values[2] + '"')
             mycursor.execute(sql)
             rows = mycursor.fetchall()
@@ -254,4 +269,34 @@ class QueryCollection:
             return 1
         except Exception as e:
             logger.error("Error in insertBook QueryCollection " + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def allBooks(self):
+        sql = dbcfg.sql['allBooks']
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            rows = mycursor.fetchall()
+            mydb.close()
+            return rows
+
+        except Exception as e:
+            logger.error("Error in allBooks QueryCollection " + str(e) + traceback.format_exc())
+            sys.exit(-1)
+
+    def issueData(self, doc_id):
+        copies = self.getDocCount(QueryCollection, doc_id)
+        sql = "SELECT Member_Id from Librarian.Documents WHERE Doc_Id =" + str(doc_id) + ';'
+
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            rows = mycursor.fetchall()
+            mydb.close()
+            if len(rows)==0:
+                return None, copies
+            else:
+                return rows[0], copies
+        except Exception as e:
+            logger.error("Error in issueData QueryCollection " + str(e) + traceback.format_exc())
             sys.exit(-1)

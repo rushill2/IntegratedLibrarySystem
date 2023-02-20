@@ -59,7 +59,8 @@ class TwoFACreate(tk.Frame):
         self.no.grid(sticky='ew', columnspan=2)
 
     def noLoader(self, controller):
-        self.formlabel['text'] = "Account Created without 2FA"
+        DataVault.pageMap['CreateMember'].formlabel['text'] = "Account Created without 2FA"
+        DataVault.pageMap['CreateMember'].createForm()
         controller.show_frame(DataVault.twofa_origin)
     def verifyOTP(self, controller):
         self.yes.grid_forget()
