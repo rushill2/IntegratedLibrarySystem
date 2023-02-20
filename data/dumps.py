@@ -1,4 +1,3 @@
-import rsa
 template = {
     'Books': {
         0: "Book_Title",
@@ -42,13 +41,6 @@ tables = {
 }
 
 filters = ["Book_Title", 'Edition', 'Keywords', 'Genre', 'Authors', 'Publication_Date']
-
-password = "Thehighground@773"
 memberid = None
-rsa_password_external = None
-
 inputvalues = {}
 specials = "!@#$%^&*()-+?_=,<>/"
-
-password_external = "ilsinstance@123"
-encrypted_pass = b'499b7f5acc60c28de88655'
