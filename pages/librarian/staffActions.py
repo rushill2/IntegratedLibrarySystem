@@ -99,7 +99,9 @@ class StaffActions(tk.Frame):
         controller.show_frame("ViewMembers")
 
     def preloadCreate(self, controller):
+        DataVault.pageMap['CreateMember'].createForm()
         LoginManager.loginManager(LoginManager,DataVault.pageMap, "Librarian", DataVault.loggedinID, "CreateMember", controller)
+
         controller.show_frame("CreateMember")
 
 class InsertBook(tk.Frame):

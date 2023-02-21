@@ -37,6 +37,8 @@ class TwoFALogin(tk.Frame):
             self.no.grid_forget()
             self.back = tk.Button(self, text='Proceed', command=lambda: controller.show_frame(DataVault.twofa_back))
             self.back.grid(sticky='ew', columnspan=5)
+            time.sleep(1.7)
+            controller.show_frame("SearchHome")
         else:
             self.formlabel['text'] = "Incorrect OTP, try again"
 
@@ -68,11 +70,12 @@ class TwoFACreate(tk.Frame):
         TwoFactor.send_code(TwoFactor)
         self.formlabel['text'] = "Enter your OTP"
         self.otpentry = tk.Entry(self, textvariable=self.otpval)
-        self.otpentry.grid(sticky='ew', columnspan=5)
+        self.otpentry.grid(columnspan=5)
         self.verifybtn = tk.Button(self, text='Verify', command=lambda:self.accountCreated2FA(controller))
-        self.verifybtn.grid(sticky='ew', columnspan=5)
+        self.verifybtn.grid(columnspan=5)
         self.resend = tk.Button(self, text="Resend", command=lambda: TwoFactor.send_code(TwoFactor))
-        self.resend.grid(sticky='ew', columnspan=2)
+        self.resend.grid(columnspan=5)
+        self.grid_columnconfigure((0, 4), weight=1)
 
     def accountCreated2FA(self, controller):
         if TwoFactor.authenticate(TwoFactor, self.otpentry.get()):
@@ -80,7 +83,9 @@ class TwoFACreate(tk.Frame):
             QueryCollection.update2FABool(TwoFactor,TwoFactor.id, "Member")
             self.verifybtn.grid_forget()
             self.otpentry.grid_forget()
-            self.back = tk.Button(self, text='Back', command=lambda: controller.show_frame(DataVault.twofa_back))
+            self.resend.grid_forget()
+            self.formlabel['text'] = "2FA Set up! Hit back to do other things"
+            self.back = tk.Button(self, text='Back', command=lambda: controller.show_frame('StaffActions'))
             self.back.grid(sticky='ew', columnspan=5)
         else:
             self.formlabel['text'] = "Incorrect OTP"
