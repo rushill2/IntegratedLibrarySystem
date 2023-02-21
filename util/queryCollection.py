@@ -21,7 +21,7 @@ class QueryCollection:
         try:
             passw = AESPasswEncryption.decrypt(AESPasswEncryption).decode()
             mydb = mysql.connector.connect(
-                    user='root',
+                    user='external_user',
                     password=passw,
                     host='103.90.163.100',
                     port=3306,

@@ -25,7 +25,7 @@ class AESPasswEncryption:
         iv = secrets.randbits(256)
         with open('security/keys/ivector.txt', 'w') as f:
             f.write(str(iv))
-        plaintext = security.dumps.password
+        plaintext = 'ilsinstance@123'
         aes = pyaes.AESModeOfOperationCTR(key, pyaes.Counter(iv))
         ciphertext = aes.encrypt(plaintext)
         with open('security/encryption.txt', 'wb') as f:
@@ -45,3 +45,6 @@ class AESPasswEncryption:
             aes = pyaes.AESModeOfOperationCTR(key, pyaes.Counter(iv))
             decrypted = aes.decrypt(ciphertext)
             return decrypted
+
+# AESPasswEncryption.keygen(AESPasswEncryption)
+# AESPasswEncryption.encrypt(AESPasswEncryption)
