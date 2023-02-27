@@ -35,6 +35,7 @@ class ViewMembers(tk.Frame):
     def preloadIssues(self, controller, row):
         # display member information
         try:
+            DataVault.bookborrows_msg.set("Your issues")
             DataVault.currMem = DataVault.viewMemberList[row-1]
             issues = self.member.getIssuesbyMemId(DataVault.currMem[0])
             # display title, date of issue, due date and option to notify via email

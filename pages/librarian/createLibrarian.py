@@ -25,6 +25,7 @@ class CreateLibrarian(tk.Frame):
         self.dob = tk.StringVar()
         DataVault.pageMap["CreateLibrarian"] = self
         self.log = None
+        self.logoutbtn = None
         self.lastname = tk.StringVar()
         self.email = tk.StringVar()
         self.phone = tk.StringVar()

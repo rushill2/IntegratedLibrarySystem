@@ -32,8 +32,8 @@ class CreateMember(tk.Frame):
         self.twoFA = tk.StringVar()
         self.otpval = tk.StringVar()
 
-        formlabel = tk.Label(self, text="Enter your details: ", font=controller.title_font)
-        formlabel.grid(row=0, column=3)
+        self.formlabel = tk.Label(self, text="Enter your details: ", font=controller.title_font)
+        self.formlabel.grid(row=0, column=3)
         self.createForm()
         submit = tk.Button(self, text="Submit",
                            command=lambda: self.validateStaffAccount(formlabel, controller))

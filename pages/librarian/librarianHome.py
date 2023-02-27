@@ -41,7 +41,7 @@ class LibrarianHome(tk.Frame):
 
     def preloadLibCreate(self, controller):
         LoginManager.loginManager(LoginManager,DataVault.pageMap, "Librarian", DataVault.loggedinID, "CreateLibrarian",controller)
-        DataVault.pageMap['CreateLibrarian'].loginform()
+        DataVault.pageMap['CreateLibrarian'].loginForm()
         controller.show_frame("CreateLibrarian")
 
     def preloadLogin(self, controller):

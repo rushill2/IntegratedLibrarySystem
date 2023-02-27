@@ -110,6 +110,7 @@ class QueryCollection:
         # cpde 2 : too many borrows
         # code 3 : mot enough books borrowed
         sql = dbcfg.sql['selectMembers'].replace('{_memid}', str(mem_id))
+        issuelist = None
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             mycursor.execute(sql)
@@ -128,6 +129,7 @@ class QueryCollection:
             if not issues:
                 if action == 'borrow':
                     issues = str(doc_id) + ','
+                    issuelist = issues
                 else:
                     return 3
             else:
@@ -138,17 +140,22 @@ class QueryCollection:
                         issues += str(doc_id) +','
                     else:
                         issues += str(doc_id) + ','
+                    issuelist = issues
                 else:
-                    if issues[-1] == ',':
-                        issues = issues.replace(str(doc_id) + ',', "")
-                    else:
-                        issues = issues.replace(',' + str(doc_id), "")
+                    issuearr = issues.split(',')
+                    idx = issuearr.index(str(doc_id))
+                    del issuearr[idx]
+                    newissues = ','.join(issuearr)
+                    if len(newissues) == 0:
+                        issuelist = ''
 
-                    if issues == ',':
-                        issues = None
+                    elif newissues[-1] == ',':
+                        issuelist = newissues[:-1]
+                    else:
+                        issuelist = newissues
 
             sql = dbcfg.sql['updateMemberIssues']
-            values = [numissues, issues, str(mem_id)]
+            values = [numissues, issuelist, str(mem_id)]
             logger.info('updateMembers SQL; ' + sql)
             try:
                 mydb, mycursor = QueryCollection.connectDB(QueryCollection)

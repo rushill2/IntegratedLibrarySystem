@@ -18,6 +18,8 @@ class BookBorrows(tk.Frame):
         t = time.time()
         DataVault.BBorrows = self
         self.app = App()
+        self.log = None
+        self.logoutbtn = None
         logger.info("Opening SearchResults...")
         tk.Frame.__init__(self, parent)
         DataVault.pageMap["BookBorrows"] = self

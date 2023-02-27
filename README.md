@@ -2,49 +2,6 @@
 Integrated Library System with secure login, 2FA, search, issue, return functions
 Ideal use case is on the Staff side of a Library DBMS
 
-## Version History
-
-#### 1.0.0:
-- Initial Commit, basic search functions working
-
-#### 1.0.1:
-- Added login with email ID and password instead of member id
-
-#### 1.0.2:
-- Stored password as hash, created staff home page
-
-#### 1.1.0:
-- Completed Member side (except for magazines and journals (low priority)
-- Set up input validation for account creation (edge case - empty fields - defaults to date issue)
-
-#### 1.2.0:
-- Fixed state transition issues
-- Added SMTP client for book reminder emails
-
-#### 1.3.0:
-- Added 2FA for member account create and login
-- Changed all UI widgets to grid layout, earlier used tk.__widget__.pack()
-
-#### 1.3.1
-- Refactor
-- Check for if email already in use
-- 2FA for Staff login added
-
-#### 1.3.2
-- Fixed details regression
-- Validation Class added
-
-#### 1.3.3
-- insertBook added with input validation
-
-#### 1.4.0
-- Logged in and out states reflect pages ie no return to login page until log out
-
-#### 1.5.0
-- Fixed buggy state transition. Added SSH tunneling 
-- Password protected via RSA encryption in compiled file. Not visible to user at all
-
-
 # Instructions
 ### To Run
 -  just run main.py!
@@ -59,6 +16,9 @@ Passwords are stored as an SHA256 Hash. When logging in, the input's hash is com
 
 ### 2FA
 - Optional two-factor authentication with phone number verification code and email+password. For both Members and Staff
+
+### Internal Password Protection
+- Degree of obfuscation added to remote server password. Connection to the server is needed, and the password is stored as a AES-128 encrypted file, decrypted as needed.
 
 ### Password Reset - In Progress
 - Uses 2FA to verify and sends an email using the SMTP server for the email domain name with a code (since it's not a web app can't do a url)
@@ -128,7 +88,51 @@ Pre-loader for documents already borrowed. Used by HomePage, and SearchResults. 
 #### populateResults():
 Pre-loader for document search. Used by HomePage, SearchBooks
 
+### populateDetails():
+Pre-loader for member details. Used by StaffActions to show member details
 
+
+## Version History
+
+#### 1.0.0:
+- Initial Commit, basic search functions working
+
+#### 1.0.1:
+- Added login with email ID and password instead of member id
+
+#### 1.0.2:
+- Stored password as hash, created staff home page
+
+#### 1.1.0:
+- Completed Member side (except for magazines and journals (low priority)
+- Set up input validation for account creation (edge case - empty fields - defaults to date issue)
+
+#### 1.2.0:
+- Fixed state transition issues
+- Added SMTP client for book reminder emails
+
+#### 1.3.0:
+- Added 2FA for member account create and login
+- Changed all UI widgets to grid layout, earlier used tk.__widget__.pack()
+
+#### 1.3.1
+- Refactor
+- Check for if email already in use
+- 2FA for Staff login added
+
+#### 1.3.2
+- Fixed details regression
+- Validation Class added
+
+#### 1.3.3
+- insertBook added with input validation
+
+#### 1.4.0
+- Logged in and out states reflect pages ie no return to login page until log out
+
+#### 1.5.0
+- Fixed buggy state transition. Added SSH tunneling 
+- Password protected via AES-128 encryption in compiled file. Not visible to user at all
 
 
 
