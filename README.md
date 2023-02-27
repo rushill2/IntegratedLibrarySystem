@@ -24,10 +24,8 @@ Passwords are stored as an SHA256 Hash. When logging in, the input's hash is com
 - Uses 2FA to verify and sends an email using the SMTP server for the email domain name with a code (since it's not a web app can't do a url)
 
 ### Parametrized SQL
-Mainly to prevent injections. Input validation as well in order to prevent any mischief
+- Mainly to prevent injections. Input validation as well in order to prevent any mischief
 
-### Server Password Protection
-Password is stored in a compiled file that is encrypted using AES-128. Password is decrypted on 
 # Specifications
 
 ## User Types
