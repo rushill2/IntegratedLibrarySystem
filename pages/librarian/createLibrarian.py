@@ -63,7 +63,7 @@ class CreateLibrarian(tk.Frame):
             self.loginForm()
             TwoFactor.Phone = phone
             DataVault.twofa_back = "StaffActions"
-            DataVault.twofa_origin = "CreateMember"
+            DataVault.twofa_origin = "StaffActions"
             controller.show_frame("TwoFACreate")
 
     def loginForm(self):

@@ -6,6 +6,7 @@ from config import dbconfig as dbcfg
 import sys
 import logging
 
+from util.dataVault import DataVault
 from util.queryCollection import QueryCollection
 from util.twoFAUtil import TwoFactor
 
@@ -103,7 +104,8 @@ class Librarian:
 
     def createMemberAccount(self, data):
         # random 6 digit int as ID
-        data[0] = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        DataVault.createdStaffId = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        data[0] = DataVault.createdStaffId
         TwoFactor.id = data[0]
         data.append(0)
         sql = dbcfg.sql['insertMember']

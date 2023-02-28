@@ -35,3 +35,4 @@ class DataVault:
     viewMems = None
     viewMemberList = []
     globallog = None
+    createdStaffId = None

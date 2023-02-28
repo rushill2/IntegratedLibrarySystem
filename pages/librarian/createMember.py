@@ -36,7 +36,7 @@ class CreateMember(tk.Frame):
         self.formlabel.grid(row=0, column=3)
         self.createForm()
         submit = tk.Button(self, text="Submit",
-                           command=lambda: self.validateStaffAccount(formlabel, controller))
+                           command=lambda: self.validateStaffAccount(self.formlabel, controller))
         back = tk.Button(self, text="Back",
                            command=lambda: controller.show_frame("StaffActions"))
         submit.grid(sticky=tk.E)

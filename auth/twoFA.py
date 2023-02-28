@@ -5,6 +5,7 @@ from app import App
 from util.dataVault import DataVault
 from pages.librarian.staffActions import logger
 from util.queryCollection import QueryCollection
+from util.stateUtil import LoginManager
 from util.twoFAUtil import TwoFactor
 
 
@@ -61,8 +62,9 @@ class TwoFACreate(tk.Frame):
         self.no.grid(sticky='ew', columnspan=2)
 
     def noLoader(self, controller):
-        DataVault.pageMap['CreateMember'].formlabel['text'] = "Account Created without 2FA"
+        DataVault.pageMap['StaffActions'].formlabel['text'] = "Account Created without 2FA"
         DataVault.pageMap['CreateMember'].createForm()
+        LoginManager.loginManager(LoginManager, DataVault.pageMap, 'Librarian', DataVault.createdStaffId, "StaffActions", controller)
         controller.show_frame(DataVault.twofa_origin)
     def verifyOTP(self, controller):
         self.yes.grid_forget()
