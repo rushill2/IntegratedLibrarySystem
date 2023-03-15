@@ -20,6 +20,8 @@ class DataVault:
     lib_loggedin = False
     mem_loggedin = False
     modbtnarr = []
+    twoFAid = None
+    twoFAtype = None
     currMem = None
     deetbtnarr = []
     issues = []

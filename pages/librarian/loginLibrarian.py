@@ -23,6 +23,7 @@ class LoginLibrarian(tk.Frame):
         self.app.populate()
         DataVault.pageMap["LoginLibrarian"] = self
         self.logoutbtn = None
+        self.log = None
         self.controller = controller
         self.label = tk.Label(self, text="Enter your details:", font=controller.title_font)
         self.label.grid(row = 0, column = 3)

@@ -11,6 +11,7 @@ from util.inputValidation import Validation
 from util.memberSQL import Member
 from util.precomputeTables import PrecomputeTables
 from util.queryCollection import QueryCollection
+from util.stateUtil import LoginManager
 
 
 class ViewMembers(tk.Frame):
@@ -42,18 +43,21 @@ class ViewMembers(tk.Frame):
             # TODO: Change all populate security from DataVault variables to fn params
             DataVault.issues = issues
             if not issues or len(issues)==0:
-                DataVault.pageMap['MemberDetails'].formlabel['text'] = "No Books issued!"
-                return
-            for i in range(len(issues)):
-                today = datetime.date.today()
-                if today < issues[i][4]:
-                    issues[i] += ("Overdue",)
-                else:
-                    issues[i] += ("On Time",)
+                DataVault.pageMap['MemberDetails'].formlabel['text'] = "No Issues for Member " + str(DataVault.currMem[0]) + ' : ' + DataVault.currMem[1] + ' ' + DataVault.currMem[2]
+            else:
+                for i in range(len(issues)):
+                    today = datetime.date.today()
+                    if today < issues[i][4]:
+                        issues[i] += ("Overdue",)
+                    else:
+                        issues[i] += ("On Time",)
+                DataVault.pageMap['MemberDetails'].formlabel['text'] = "Issue Details for Member " + str(DataVault.currMem[0]) + ' : ' + DataVault.currMem[1] + ' ' + DataVault.currMem[2]
 
             issues += (("Issue Id", "Document Id", "Title", "Issue Date", "Due Date","Memid", "Status"),)
             issues.reverse()
             PrecomputeTables.populateDetails(PrecomputeTables,controller, issues)
+            LoginManager.loginManager(LoginManager, DataVault.pageMap, "Librarian", DataVault.loggedinID,
+                                      "MemberDetails", controller, row = len(issues)+2)
             controller.show_frame("MemberDetails")
         except Exception as e:
             logger.error("Error in preloadIssues: " + str(e) + traceback.format_exc())

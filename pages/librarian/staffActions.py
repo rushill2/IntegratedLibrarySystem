@@ -65,10 +65,10 @@ class StaffActions(tk.Frame):
                         b = tk.Entry(insertBook,justify=tk.CENTER, textvariable=insertBook.variables[j])
                     else:
                         b = tk.Entry(insertBook, justify=tk.CENTER)
-                    b.grid(row=i+2, column=j)
+                    b.grid(row=i+2, column=j, sticky='w')
                     b.insert(tk.END, str(document[i][j]))
                     if i > 0:
-                        DataVault.notify.grid(row=i+1, column=j + 3)
+                        DataVault.notify.grid(row=i+1, column=j + 3, sticky='w')
                 except Exception as e:
                     logger.error("Error in populateTable: " + str(e) + traceback.format_exc())
                     sys.exit(-1)

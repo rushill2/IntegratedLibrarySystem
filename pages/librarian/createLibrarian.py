@@ -58,9 +58,10 @@ class CreateLibrarian(tk.Frame):
                                                        retype_pass=retype_pass, dob=dob, first=first, last=last)
         if valid_input:
             data = [None, first, last, dob, phone, email, hash]
-            app.Librarian().createMemberAccount(data)
+            app.Librarian().createStaffAccount(data)
             formlabel['text'] = "Account Created! "
             self.loginForm()
+
             TwoFactor.Phone = phone
             DataVault.twofa_back = "StaffActions"
             DataVault.twofa_origin = "StaffActions"

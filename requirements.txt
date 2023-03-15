@@ -2,3 +2,6 @@ pythontextnow~=1.0.1
 mysql-connector-python~=8.0.31
 PyQt5~=5.15.7
 paramiko~=3.0.0
+pyaes~=1.6.1
+random-user-agent~=1.0.1
+pbkdf2~=1.3

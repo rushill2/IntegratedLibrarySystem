@@ -89,6 +89,10 @@ class Librarian:
     def createStaffAccount(self, data):
         # random 6 digit int as ID
         self.lib_id = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        DataVault.createdStaffId = self.lib_id
+        DataVault.loggedinID = self.lib_id
+        DataVault.twoFAid = self.lib_id
+        DataVault.twoFAtype = "Staff"
         data[0] = self.lib_id
 
         sql = dbcfg.sql['insertStaff']
@@ -104,8 +108,10 @@ class Librarian:
 
     def createMemberAccount(self, data):
         # random 6 digit int as ID
-        DataVault.createdStaffId = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
-        data[0] = DataVault.createdStaffId
+        DataVault.mem_id = ''.join(["{}".format(randint(0, 9)) for num in range(0, 5)])
+        DataVault.twoFAid = DataVault.mem_id
+        DataVault.twoFAtype = "Member"
+        data[0] = DataVault.mem_id
         TwoFactor.id = data[0]
         data.append(0)
         sql = dbcfg.sql['insertMember']

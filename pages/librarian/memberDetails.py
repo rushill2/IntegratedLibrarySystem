@@ -23,10 +23,10 @@ class MemberDetails(tk.Frame):
         DataVault.memDetails = self
         DataVault.pageMap["MemberDetails"] = self
         # TODO: add input validation
-        self.formlabel = tk.Label(self, text="", font=controller.title_font)
-        self.formlabel.grid(row=0, column=3)
+        self.formlabel = tk.Label(self, text="Member Details", font=controller.title_font)
+        self.formlabel.grid(ipady=10, ipadx=10)
         self.back = tk.Button(self, text="Back", command=lambda: controller.show_frame('ViewMembers'))
-        self.back.grid(row=0, column=8)
+        self.back.grid(ipady=10, ipadx=10)
 
     def sendEmail(self, row, controller, i):
 

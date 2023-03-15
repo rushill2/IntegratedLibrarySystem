@@ -3,7 +3,7 @@ from util.dataVault import DataVault
 
 
 class LoginManager:
-    def loginManager(self, pageMap, type, id, page, controller):
+    def loginManager(self, pageMap, type, id, page, controller, row=None):
         fragment = pageMap[page]
         if id is None:
             ltext = "Not Logged in yet"
@@ -18,8 +18,13 @@ class LoginManager:
                 fragment.log = tk.Label(fragment, text=ltext)
                 fragment.log.config(fg="gray")
                 fragment.logoutbtn = tk.Button(fragment, text="Logout", command= lambda: self.logout(LoginManager, controller, fragment))
-                fragment.logoutbtn.grid(columnspan=10)
-                fragment.log.grid(sticky="ew", columnspan=10)
+                if row is not None:
+                    fragment.logoutbtn.grid(columnspan=10, sticky='s', row=row)
+                    fragment.log.grid(sticky="s", columnspan=10, row=row+1)
+                else:
+                    fragment.logoutbtn.grid(columnspan=10, sticky='s')
+                    fragment.log.grid(sticky="s", columnspan=10)
+
                 fragment.grid_columnconfigure((0, 4), weight=1)
 
     def logout(self, controller, fragment):

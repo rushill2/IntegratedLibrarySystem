@@ -217,7 +217,12 @@ class QueryCollection:
             sys.exit(-1)
 
     def update2FABool(self, id, type):
-        sql = "UPDATE Librarian." + type + ' SET TwoFA = 1 WHERE Member_Id = ' + str(id) + ';'
+
+        sql = "UPDATE Librarian." + type + ' SET TwoFA = 1 WHERE {_idtype} = ' + str(id) + ';'
+        if type == "Member":
+            sql = sql.replace('{_idtype}', "Member_Id")
+        else:
+            sql = sql.replace('{_idtype}', "Staff_Id")
         try:
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             mycursor.execute(sql)

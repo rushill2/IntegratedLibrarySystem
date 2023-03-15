@@ -52,14 +52,16 @@ class TwoFACreate(tk.Frame):
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
         self.otpval = tk.StringVar()
+        self.log = None
+        self.logoutbtn = None
         DataVault.pageMap["TwoFACreate"] = self
         # TODO: add input validation
         self.formlabel = tk.Label(self, text="Would you like to set up Two-Factor Authentication?", font=controller.title_font)
         self.formlabel.grid(sticky='ew', columnspan=10)
         self.yes = tk.Button(self, text="Yes", command=lambda: self.verifyOTP(controller))
-        self.yes.grid(sticky='ew', columnspan=2)
+        self.yes.grid(sticky='nsew', columnspan=5)
         self.no = tk.Button(self, text="No", command=lambda: self.noLoader(controller))
-        self.no.grid(sticky='ew', columnspan=2)
+        self.no.grid(sticky='nsew', columnspan=5)
 
     def noLoader(self, controller):
         DataVault.pageMap['StaffActions'].formlabel['text'] = "Account Created without 2FA"
@@ -82,12 +84,16 @@ class TwoFACreate(tk.Frame):
     def accountCreated2FA(self, controller):
         if TwoFactor.authenticate(TwoFactor, self.otpentry.get()):
             # make 2FA enabled in db
-            QueryCollection.update2FABool(TwoFactor,TwoFactor.id, "Member")
+            QueryCollection.update2FABool(TwoFactor, DataVault.twoFAid, DataVault.twoFAtype)
             self.verifybtn.grid_forget()
             self.otpentry.grid_forget()
             self.resend.grid_forget()
             self.formlabel['text'] = "2FA Set up! Hit back to do other things"
-            self.back = tk.Button(self, text='Back', command=lambda: controller.show_frame('StaffActions'))
-            self.back.grid(sticky='ew', columnspan=5)
+            self.back = tk.Button(self, text='Back', command=lambda: self.returnToActions(controller))
+            self.back.grid(sticky='ns', columnspan=5)
         else:
             self.formlabel['text'] = "Incorrect OTP"
+
+    def returnToActions(self, controller):
+        LoginManager.loginManager(LoginManager, DataVault.pageMap, "Librarian", DataVault.twoFAid, "StaffActions", controller)
+        controller.show_frame('StaffActions')
