@@ -69,6 +69,9 @@ Can look up books, borrow books return books
 1. Issues table display TODO
 2. Remove button needed for state transition
 
+#### Module 5: Tests
+Tests written for backend scripts. Slowly adding front-end behavior emulation
+
 ## DataVault
 1. Overarching data-store class that allows for pre-computing of values.
 
