@@ -1,0 +1,12 @@
+__pycache__/
+venv/
+.idea/
+.vscode/
+logs/
+config/__pycache__/
+auth/__pycache__/
+pages/__pycache__/
+security/__pycache__/
+tests/backend_tests/__pycache__/
+tests/frontend_tests/__pycache__/
+util/__pycache__/

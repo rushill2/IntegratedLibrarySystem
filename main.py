@@ -14,11 +14,5 @@ file_handler.setFormatter(logconfig.logFormat)
 logger.addHandler(file_handler)
 
 if __name__ == '__main__':
-    # logger.info("Creating Application...")
-    # app = QApplication(sys.argv)
-    # logger.info("Initializing UI...")
-    # ex = UI()
-    # logger.info("Execution begins")
-    # sys.exit(app.exec_())
     app = SampleApp()
     app.mainloop()

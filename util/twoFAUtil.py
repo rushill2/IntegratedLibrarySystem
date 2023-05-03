@@ -15,21 +15,6 @@ class TwoFactor:
     OTP = None
     Phone = None
     id = None
-    def send_twilio(self):
-
-
-        # Set environment variables for your credentials
-        # Read more at http://twil.io/secure
-        account_sid = "ACd00daa5a7be907805f5195d158089c90"
-        auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-        client = cl(account_sid, auth_token)
-
-        message = client.messages.create(
-            body="Hello from Twilio",
-            from_="+18555941813",
-            to="+12178198558"
-        )
-
     def send_code(self):
         try:
             self.Phone = "+1" + self.Phone
