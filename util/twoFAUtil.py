@@ -15,7 +15,7 @@ class TwoFactor:
     OTP = None
     Phone = None
     id = None
-    def send_code(self):
+    def send_code(self, caller, controller):
         try:
             self.Phone = "+1" + self.Phone
             Client.set_client_config(username=USERNAME, sid_cookie=SID_COOKIE)
@@ -24,7 +24,7 @@ class TwoFactor:
             conversation_service.send_message(message=twoFAConfig.message.replace('{_otp}', self.OTP))
         except Exception as e:
             logger.error("Error in 2FA OTP: " + str(e) + traceback.format_exc())
-            sys.exit(-1)
+            caller.serviceOutage(controller)
 
 
     def authenticate(self, Entry):

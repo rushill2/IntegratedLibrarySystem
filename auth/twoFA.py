@@ -13,6 +13,8 @@ class TwoFALogin(tk.Frame):
     def __init__(self, parent, controller):
         self.placeholder_color = None
         t = time.time()
+        self.log = None
+        self.logoutbtn = None
         self.app = App()
         logger.info("Opening LibrarianHome...")
         tk.Frame.__init__(self, parent)
@@ -26,8 +28,9 @@ class TwoFALogin(tk.Frame):
         self.no.grid(sticky='ew', columnspan=2)
         self.btn = tk.Button(self, text="Verify", command=lambda:self.goToSearchHome(controller))
         self.btn.grid(sticky='ew', columnspan=2)
-        self.resend = tk.Button(self, text="Resend", command=lambda: TwoFactor.send_code(TwoFactor))
+        self.resend = tk.Button(self, text="Resend", command=lambda: TwoFactor.send_code(TwoFactor, self, controller))
         self.resend.grid(sticky='ew', columnspan=2)
+        self.errorlabel = None
 
     def goToSearchHome(self, controller):
         if TwoFactor.authenticate(TwoFactor, self.no.get()):
@@ -42,6 +45,12 @@ class TwoFALogin(tk.Frame):
             controller.show_frame("SearchHome")
         else:
             self.formlabel['text'] = "Incorrect OTP, try again"
+
+    def serviceOutage(self, controller):
+        DataVault.pageMap['StaffActions'].label['text'] = "TwoFA service is down, account created without TwoFA!"
+        time.sleep(2)
+        controller.show_frame("SearchHome")
+
 
 
 class TwoFACreate(tk.Frame):
@@ -71,13 +80,13 @@ class TwoFACreate(tk.Frame):
     def verifyOTP(self, controller):
         self.yes.grid_forget()
         self.no.grid_forget()
-        TwoFactor.send_code(TwoFactor)
+        TwoFactor.send_code(TwoFactor, self, controller)
         self.formlabel['text'] = "Enter your OTP"
         self.otpentry = tk.Entry(self, textvariable=self.otpval)
         self.otpentry.grid(columnspan=5)
         self.verifybtn = tk.Button(self, text='Verify', command=lambda:self.accountCreated2FA(controller))
         self.verifybtn.grid(columnspan=5)
-        self.resend = tk.Button(self, text="Resend", command=lambda: TwoFactor.send_code(TwoFactor))
+        self.resend = tk.Button(self, text="Resend", command=lambda: TwoFactor.send_code(TwoFactor, self, controller))
         self.resend.grid(columnspan=5)
         self.grid_columnconfigure((0, 4), weight=1)
 
@@ -97,3 +106,9 @@ class TwoFACreate(tk.Frame):
     def returnToActions(self, controller):
         LoginManager.loginManager(LoginManager, DataVault.pageMap, "Librarian", DataVault.twoFAid, "StaffActions", controller)
         controller.show_frame('StaffActions')
+
+    def serviceOutage(self, controller):
+        DataVault.pageMap['StaffActions'].label['text'] = "TwoFA service is down, account created without TwoFA!"
+        time.sleep(2)
+        LoginManager.loginManager(LoginManager, DataVault.pageMap, "Librarian", DataVault.twoFAid, "StaffActions", controller)
+        controller.show_frame("StaffActions")

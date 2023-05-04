@@ -108,6 +108,7 @@ class InsertBook(tk.Frame):
     def __init__(self, parent, controller):
         t = time.time()
         self.app = App()
+        self.logoutbtn = None
         logger.info("Opening SearchHome...")
         tk.Frame.__init__(self, parent)
         self.staff = Librarian()

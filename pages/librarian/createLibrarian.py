@@ -110,6 +110,13 @@ class CreateLibrarian(tk.Frame):
         showpass = tk.Button(self, text="Show Password",
                              command=lambda: self.password_visible(f1, g1, showpass))
         showpass.grid(row=6, column=4, ipadx = 10)
+        self.firstname.set('')
+        self.lastname.set('')
+        self.email.set('')
+        self.phone.set('')
+        self.dob.set('')
+        self.password.set('')
+        self.retype_pass.set('')
 
     def password_visible(self, passw, retype, showpass):
         CreateLibrarian.clickcnt += 1

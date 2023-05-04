@@ -21,7 +21,3 @@ For the commands below, depending on the installation, python may have to be sub
     ```python
     python main.py
     ```
-
-    ```python
-    python packageStatistics.py udeb-arm64
-    ```

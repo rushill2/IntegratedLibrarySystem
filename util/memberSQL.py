@@ -33,7 +33,7 @@ class Member:
                 date = datetime.datetime(int(vals[0]), int(vals[1]), int(vals[2]))
                 sql += k + " = " + str(date)
             if k == "Authors" or k == "Keywords" or k == "Contributors":
-                    sql += k + " LIKE " + "'%" + v + "%'"
+                sql += k + " LIKE " + "'%" + v + "%'"
 
             # title
             else:
@@ -41,8 +41,9 @@ class Member:
 
             if i < len(list(params.values())) - 1:
                 sql += " AND "
+
+        logger.info("searchDocument SQL: " + sql)
         try:
-            logger.info("searchDocument SQL: " + sql)
             mydb, mycursor = QueryCollection.connectDB(QueryCollection)
             mycursor.execute(sql)
             rows = mycursor.fetchall()
@@ -53,7 +54,7 @@ class Member:
 
         except Exception as e:
             logger.error("searchDocument Error: " + str(e) + traceback.format_exc())
-            sys.exit(-1)
+            raise
 
     def getRecords(self, name, type):
         name = '"' + name + '"'
@@ -70,13 +71,18 @@ class Member:
                 "{_title}", name)
 
         logger.info("getRecords SQL: " + sql)
-        mydb, mycursor = QueryCollection.connectDB(QueryCollection)
-        mycursor.execute(sql)
-        mycursor.fetchall()
-        data = self.cursor._rows[0]
-        logger.info("getRecords Data: " + str(data))
-        mydb.close()
-        return data
+        try:
+            mydb, mycursor = QueryCollection.connectDB(QueryCollection)
+            mycursor.execute(sql)
+            mycursor.fetchall()
+            data = self.cursor._rows[0]
+            logger.info("getRecords Data: " + str(data))
+            mydb.close()
+            return data
+
+        except Exception as e:
+            logger.error("getRecords Error: " + str(e) + traceback.format_exc())
+            raise
 
     def borrowDocument(self, doctype, doc_id, book_id, data, mem_id):
         if QueryCollection.alreadyBorrowed(QueryCollection, doc_id, mem_id) == 1:
@@ -118,6 +124,7 @@ class Member:
 
         except Exception as e:
             logger.error("Error in getIssuesbyMemId : " + str(e) + traceback.format_exc())
+            raise
 
     def deleteMember(self, id):
         sql = dbcfg.sql['deleteMember'].replace('{_memid}', str(id))
@@ -128,7 +135,7 @@ class Member:
             mydb.close()
         except Exception as e:
             logger.error("Error in deleteMember : " + str(e) + traceback.format_exc())
-            sys.exit(-1)
+            raise
 
 
 
